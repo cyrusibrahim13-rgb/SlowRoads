@@ -53,11 +53,31 @@ jobs:
           path: ${{ matrix.files }}
 
   release:
-    name: Create release
+    name: Create versioned release
     if: github.event_name == 'push' || github.event_name == 'release'
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Check out release source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Read app version
+        id: version
+        shell: bash
+        run: echo "value=$(node -p \"require('./package.json').version\")" >> "$GITHUB_OUTPUT"
+
+      - name: Generate Markdown release notes
+        run: npm run release:notes
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.value }}
+
       - name: Download installer artifacts
         uses: actions/download-artifact@v4
         with:
@@ -65,12 +85,13 @@ jobs:
           path: release-assets
           merge-multiple: true
 
-      - name: Create or update release
+      - name: Create or update versioned release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event_name == 'push' && format('commit-{0}', github.sha) || github.event.release.tag_name }}
-          name: ${{ github.event_name == 'push' && format('Slow Roads {0}', github.sha) || github.event.release.name }}
-          generate_release_notes: ${{ github.event_name == 'push' }}
+          tag_name: v${{ steps.version.outputs.value }}
+          name: Slow Roads v${{ steps.version.outputs.value }}
+          body_path: release-notes/v${{ steps.version.outputs.value }}.md
           files: |
             release-assets/**/*.dmg
             release-assets/**/*.exe
+            release-notes/v${{ steps.version.outputs.value }}.md
