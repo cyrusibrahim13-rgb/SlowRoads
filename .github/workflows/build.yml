@@ -2,6 +2,7 @@ name: Build release installers
 
 on:
   push:
+    branches: [main]
   release:
     types: [published]
   workflow_dispatch:
@@ -53,7 +54,7 @@ jobs:
           path: ${{ matrix.files }}
 
   release:
-    name: Create versioned release
+    name: Create or update versioned release
     if: github.event_name == 'push' || github.event_name == 'release'
     needs: build
     runs-on: ubuntu-latest
@@ -91,6 +92,8 @@ jobs:
           tag_name: v${{ steps.version.outputs.value }}
           name: Slow Roads v${{ steps.version.outputs.value }}
           body_path: release-notes/v${{ steps.version.outputs.value }}.md
+          overwrite_files: true
+          fail_on_unmatched_files: true
           files: |
             release-assets/**/*.dmg
             release-assets/**/*.exe
