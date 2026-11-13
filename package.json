@@ -1,0 +1,45 @@
+{
+  "name": "slowroads-desktop",
+  "version": "2.5.0",
+  "description": "Slow Roads desktop app",
+  "main": "main.js",
+  "author": "",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "prepare:index": "node restore-index.js",
+    "dist": "npm run prepare:index && electron-builder",
+    "dist:mac": "npm run prepare:index && electron-builder --mac dmg",
+    "dist:win": "npm run prepare:index && electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "^35.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.slowroads.desktop",
+    "productName": "Slow Roads",
+    "files": [
+      "index.html",
+      "index.html.b64",
+      "main.js",
+      "restore-index.js",
+      "package.json"
+    ],
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.games"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
