@@ -25,6 +25,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "icon": [],
     "category": "Game",
     "shortDescription": "Slow Roads desktop app"
   }
