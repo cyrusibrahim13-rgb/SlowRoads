@@ -1,9 +1,14 @@
 name: Build release installers
 
 on:
+  push:
   release:
     types: [published]
   workflow_dispatch:
+
+concurrency:
+  group: slow-roads-build-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -41,15 +46,31 @@ jobs:
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
 
-      - name: Upload installer to this release
-        if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ${{ matrix.files }}
-
       - name: Upload installer artifact
-        if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
           name: slow-roads-${{ matrix.name }}
           path: ${{ matrix.files }}
+
+  release:
+    name: Create release
+    if: github.event_name == 'push' || github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download installer artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: slow-roads-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create or update release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event_name == 'push' && format('commit-{0}', github.sha) || github.event.release.tag_name }}
+          name: ${{ github.event_name == 'push' && format('Slow Roads {0}', github.sha) || github.event.release.name }}
+          generate_release_notes: ${{ github.event_name == 'push' }}
+          files: |
+            release-assets/**/*.dmg
+            release-assets/**/*.exe
