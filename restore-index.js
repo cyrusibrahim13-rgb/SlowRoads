@@ -34,13 +34,10 @@ function createIconPng() {
   }
 
   const header = Buffer.alloc(13);
-  header.writeUInt32BE(8, 0);
-  header.writeUInt32BE(32, 4);
+  header.writeUInt32BE(size, 0);
+  header.writeUInt32BE(size, 4);
   header.writeUInt8(8, 8);
   header.writeUInt8(6, 9);
-  header.writeUInt8(0, 10);
-  header.writeUInt8(0, 11);
-  header.writeUInt8(0, 12);
 
   return Buffer.concat([
     Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
@@ -57,8 +54,6 @@ function createIconIco(png) {
   directory.writeUInt16LE(1, 4);
   directory.writeUInt8(32, 6);
   directory.writeUInt8(32, 7);
-  directory.writeUInt8(0, 8);
-  directory.writeUInt8(0, 9);
   directory.writeUInt16LE(1, 10);
   directory.writeUInt16LE(32, 12);
   directory.writeUInt32LE(png.length, 14);
