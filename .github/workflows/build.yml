@@ -56,7 +56,7 @@ jobs:
             echo "macOS Developer ID signing and notarization are configured."
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "macOS signing secrets are incomplete; building an unsigned universal package."
+            echo "macOS Developer ID secrets are incomplete; using an ad hoc code signature."
           fi
 
       - name: Import macOS signing certificate
@@ -81,11 +81,22 @@ jobs:
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD || secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID || vars.APPLE_TEAM_ID }}
 
-      - name: Build unsigned macOS installer
+      - name: Build ad hoc signed macOS installer
         if: startsWith(matrix.name, 'macOS') && steps.macos_signing.outputs.ready != 'true'
         shell: bash
         run: |
-          env -u APPLE_CERTIFICATE -u APPLE_CERTIFICATE_PASSWORD -u APPLE_SIGNING_IDENTITY -u APPLE_ID -u APPLE_PASSWORD -u APPLE_TEAM_ID npm run dist:mac
+          env -u APPLE_CERTIFICATE -u APPLE_CERTIFICATE_PASSWORD -u APPLE_ID -u APPLE_PASSWORD -u APPLE_TEAM_ID APPLE_SIGNING_IDENTITY=- npm run dist:mac
+
+      - name: Validate macOS app bundle
+        if: startsWith(matrix.name, 'macOS')
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP="$(find src-tauri/target/universal-apple-darwin/release/bundle/macos -maxdepth 1 -name '*.app' -print -quit)"
+          test -n "$APP" && test -x "$APP/Contents/MacOS/slowroads"
+          plutil -lint "$APP/Contents/Info.plist"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+          file "$APP/Contents/MacOS/slowroads"
 
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
