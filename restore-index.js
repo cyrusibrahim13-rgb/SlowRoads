@@ -61,16 +61,14 @@ function createIconIco(png) {
   return Buffer.concat([directory, png]);
 }
 
-const compressedHtml = Buffer.from(
-  fs.readFileSync(path.join(__dirname, 'index.html.b64'), 'utf8').replace(/\s/g, ''),
-  'base64'
-);
-
 const distDirectory = path.join(__dirname, 'dist');
 const iconsDirectory = path.join(__dirname, 'src-tauri', 'icons');
 fs.mkdirSync(distDirectory, { recursive: true });
 fs.mkdirSync(iconsDirectory, { recursive: true });
-fs.writeFileSync(path.join(distDirectory, 'index.html'), zlib.gunzipSync(compressedHtml));
+fs.copyFileSync(
+  path.join(__dirname, 'index.html'),
+  path.join(distDirectory, 'index.html')
+);
 
 const iconPng = createIconPng();
 fs.writeFileSync(path.join(iconsDirectory, 'icon.png'), iconPng);
