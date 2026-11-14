@@ -130,7 +130,7 @@ jobs:
 
   release:
     name: Create or update versioned release
-    if: github.event_name == 'push' || github.event_name == 'release'
+    if: github.event_name == 'push' || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     needs: build
     runs-on: ubuntu-latest
     steps:
