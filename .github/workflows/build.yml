@@ -23,9 +23,9 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            name: macOS
+            name: macOS Universal
             command: npm run dist:mac
-            files: src-tauri/target/release/bundle/dmg/*.dmg
+            files: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
           - os: windows-latest
             name: Windows
             command: npm run dist:win
@@ -40,7 +40,7 @@ jobs:
           node-version: 22
 
       - name: Check macOS signing configuration
-        if: matrix.name == 'macOS'
+        if: startsWith(matrix.name, 'macOS')
         id: macos_signing
         shell: bash
         env:
@@ -56,11 +56,11 @@ jobs:
             echo "macOS Developer ID signing and notarization are configured."
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "macOS signing secrets are incomplete; building an unsigned package."
+            echo "macOS signing secrets are incomplete; building an unsigned universal package."
           fi
 
       - name: Import macOS signing certificate
-        if: matrix.name == 'macOS' && steps.macos_signing.outputs.ready == 'true'
+        if: startsWith(matrix.name, 'macOS') && steps.macos_signing.outputs.ready == 'true'
         uses: apple-actions/import-codesign-certs@v3
         with:
           p12-file-base64: ${{ secrets.APPLE_CERTIFICATE }}
@@ -70,7 +70,7 @@ jobs:
         run: npm install
 
       - name: Build signed installer
-        if: matrix.name != 'macOS' || steps.macos_signing.outputs.ready == 'true'
+        if: startsWith(matrix.name, 'macOS') == false || steps.macos_signing.outputs.ready == 'true'
         run: ${{ matrix.command }}
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
@@ -82,7 +82,7 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID || vars.APPLE_TEAM_ID }}
 
       - name: Build unsigned macOS installer
-        if: matrix.name == 'macOS' && steps.macos_signing.outputs.ready != 'true'
+        if: startsWith(matrix.name, 'macOS') && steps.macos_signing.outputs.ready != 'true'
         shell: bash
         run: |
           env -u APPLE_CERTIFICATE -u APPLE_CERTIFICATE_PASSWORD -u APPLE_SIGNING_IDENTITY -u APPLE_ID -u APPLE_PASSWORD -u APPLE_TEAM_ID npm run dist:mac
