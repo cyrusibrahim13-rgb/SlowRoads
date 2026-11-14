@@ -12,7 +12,7 @@
     "start": "npm run dev",
     "build": "npm run prepare:index && tauri build",
     "dist": "npm run build",
-    "dist:mac": "rustup target add x86_64-apple-darwin && npm run prepare:index && tauri build --target universal-apple-darwin --bundles dmg",
+    "dist:mac": "bash scripts/build-macos.sh",
     "dist:win": "npm run prepare:index && tauri build --bundles nsis"
   },
   "devDependencies": {
