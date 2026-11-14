@@ -53,7 +53,7 @@ jobs:
         run: |
           if [ -n "$APPLE_CERTIFICATE" ] && [ -n "$APPLE_CERTIFICATE_PASSWORD" ] && [ -n "$APPLE_SIGNING_IDENTITY" ] && [ -n "$APPLE_ID" ] && [ -n "$APPLE_PASSWORD" ] && [ -n "$APPLE_TEAM_ID" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
-            echo "macOS Developer ID signing and notarization are configured."
+            echo "macOS Developer ID signing credentials are present; validating certificate import."
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
             echo "macOS Developer ID secrets are incomplete; using an ad hoc code signature."
@@ -61,6 +61,8 @@ jobs:
 
       - name: Import macOS signing certificate
         if: startsWith(matrix.name, 'macOS') && steps.macos_signing.outputs.ready == 'true'
+        id: macos_certificate
+        continue-on-error: true
         uses: apple-actions/import-codesign-certs@v3
         with:
           p12-file-base64: ${{ secrets.APPLE_CERTIFICATE }}
@@ -73,12 +75,16 @@ jobs:
         run: ${{ matrix.command }}
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ steps.macos_signing.outputs.ready == 'true' && secrets.APPLE_SIGNING_IDENTITY || '-' }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD || secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID || vars.APPLE_TEAM_ID }}
+          APPLE_CERTIFICATE: ${{ startsWith(matrix.name, 'macOS') && steps.macos_signing.outputs.ready == 'true' && steps.macos_certificate.outcome == 'success' && secrets.APPLE_CERTIFICATE || '' }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ startsWith(matrix.name, 'macOS') && steps.macos_signing.outputs.ready == 'true' && steps.macos_certificate.outcome == 'success' && secrets.APPLE_CERTIFICATE_PASSWORD || '' }}
+          APPLE_SIGNING_IDENTITY: ${{ startsWith(matrix.name, 'macOS') && steps.macos_signing.outputs.ready == 'true' && steps.macos_certificate.outcome == 'success' && secrets.APPLE_SIGNING_IDENTITY || '-' }}
+          APPLE_ID: ${{ startsWith(matrix.name, 'macOS') && steps.macos_signing.outputs.ready == 'true' && steps.macos_certificate.outcome == 'success' && secrets.APPLE_ID || '' }}
+          APPLE_PASSWORD: ${{ startsWith(matrix.name, 'macOS') && steps.macos_signing.outputs.ready == 'true' && steps.macos_certificate.outcome == 'success' && (secrets.APPLE_PASSWORD || secrets.APPLE_APP_SPECIFIC_PASSWORD) || '' }}
+          APPLE_TEAM_ID: ${{ startsWith(matrix.name, 'macOS') && steps.macos_signing.outputs.ready == 'true' && steps.macos_certificate.outcome == 'success' && (secrets.APPLE_TEAM_ID || vars.APPLE_TEAM_ID) || '' }}
+
+      - name: Report ad hoc signing fallback
+        if: startsWith(matrix.name, 'macOS') && (steps.macos_signing.outputs.ready != 'true' || steps.macos_certificate.outcome != 'success')
+        run: echo "Built an ad hoc-signed universal macOS package because Developer ID certificate import was unavailable."
 
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
