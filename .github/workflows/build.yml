@@ -24,11 +24,9 @@ jobs:
         include:
           - os: macos-latest
             name: macOS Universal
-            command: npm run dist:mac
             files: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
           - os: windows-latest
             name: Windows
-            command: npm run dist:win
             files: src-tauri/target/release/bundle/nsis/*.exe
     steps:
       - name: Check out release source
@@ -81,10 +79,10 @@ jobs:
           then
             if openssl pkcs12 -in "$certificate" -passin "env:APPLE_CERTIFICATE_PASSWORD" -noout >/dev/null 2>&1; then
               echo "ready=true" >> "$GITHUB_OUTPUT"
-              echo "macOS certificate payload is a valid password-protected PKCS#12 bundle."
+              echo "macOS certificate payload is valid."
             else
               echo "ready=false" >> "$GITHUB_OUTPUT"
-              echo "macOS certificate payload is invalid or its password does not match; using an ad hoc code signature."
+              echo "macOS certificate payload is invalid; using an ad hoc code signature."
             fi
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
@@ -102,20 +100,27 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build installer
-        run: ${{ matrix.command }}
+      - name: Build signed macOS installer
+        if: startsWith(matrix.name, 'macOS') && steps.macos_signing.outputs.ready == 'true' && steps.macos_certificate.outputs.ready == 'true'
+        run: npm run dist:mac
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
-          APPLE_CERTIFICATE: ${{ startsWith(matrix.name, 'macOS') && steps.macos_signing.outputs.ready == 'true' && steps.macos_certificate.outputs.ready == 'true' && secrets.APPLE_CERTIFICATE || '' }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ startsWith(matrix.name, 'macOS') && steps.macos_signing.outputs.ready == 'true' && steps.macos_certificate.outputs.ready == 'true' && secrets.APPLE_CERTIFICATE_PASSWORD || '' }}
-          APPLE_SIGNING_IDENTITY: ${{ startsWith(matrix.name, 'macOS') && steps.macos_signing.outputs.ready == 'true' && steps.macos_certificate.outputs.ready == 'true' && secrets.APPLE_SIGNING_IDENTITY || '-' }}
-          APPLE_ID: ${{ startsWith(matrix.name, 'macOS') && steps.macos_signing.outputs.ready == 'true' && steps.macos_certificate.outputs.ready == 'true' && secrets.APPLE_ID || '' }}
-          APPLE_PASSWORD: ${{ startsWith(matrix.name, 'macOS') && steps.macos_signing.outputs.ready == 'true' && steps.macos_certificate.outputs.ready == 'true' && (secrets.APPLE_PASSWORD || secrets.APPLE_APP_SPECIFIC_PASSWORD) || '' }}
-          APPLE_TEAM_ID: ${{ startsWith(matrix.name, 'macOS') && steps.macos_signing.outputs.ready == 'true' && steps.macos_certificate.outputs.ready == 'true' && (secrets.APPLE_TEAM_ID || vars.APPLE_TEAM_ID) || '' }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD || secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID || vars.APPLE_TEAM_ID }}
 
-      - name: Report ad hoc signing fallback
+      - name: Build ad hoc macOS installer
         if: startsWith(matrix.name, 'macOS') && (steps.macos_signing.outputs.ready != 'true' || steps.macos_certificate.outputs.ready != 'true')
-        run: echo "Built an ad hoc-signed universal macOS package because Developer ID certificate validation was unavailable."
+        shell: bash
+        run: |
+          env -u APPLE_CERTIFICATE -u APPLE_CERTIFICATE_PASSWORD -u APPLE_SIGNING_IDENTITY -u APPLE_ID -u APPLE_PASSWORD -u APPLE_TEAM_ID APPLE_SIGNING_IDENTITY=- npm run dist:mac
+
+      - name: Build Windows installer
+        if: matrix.name == 'Windows'
+        run: npm run dist:win
 
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
