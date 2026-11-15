@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SlowRoads: Endless Driving</title>
-<!-- v6.5: menus (shortcuts, vehicle, tuning, settings) open on the left side of the view. v6.4: frunk opens in the game, unified taskbar icons, headlight menu, drive seatbelt, max-speed icon, cleaner drive playback bar, reverse view, park drag fix -->
+<!-- v6.6: the top-screen 3D view draws the real trees, pines, rocks and cacti (true shapes, sizes and rotation) instead of grey posts. v6.5: menus (shortcuts, vehicle, tuning, settings) open on the left side of the view. v6.4: frunk opens in the game, unified taskbar icons, headlight menu, drive seatbelt, max-speed icon, cleaner drive playback bar, reverse view, park drag fix -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2064%2064%27%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2731%27%20fill%3D%27%23fff%27%20stroke%3D%27%23e2e0db%27%20stroke-width%3D%271%27/%3E%0A%3Cg%20fill%3D%27none%27%20stroke%3D%27%2316191b%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2721%27%20stroke-width%3D%274.6%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2717.6%27%20stroke-width%3D%27.7%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.45%27/%3E%0A%3Cpath%20d%3D%27M11.4%2030.5%20Q20%2036.5%2027.4%2035.6%20M52.6%2030.5%20Q44%2036.5%2036.6%2035.6%27%20stroke-width%3D%273.4%27/%3E%0A%3Cpath%20d%3D%27M32%2036%20V52.5%27%20stroke-width%3D%273.6%27/%3E%0A%3Cpath%20d%3D%27M32%2011%20V15.5%27%20stroke-width%3D%272.2%27%20stroke%3D%27%2316191b%27/%3E%0A%3C/g%3E%0A%3Cpath%20d%3D%27M30%2011.2h4v4.6h-4z%27%20fill%3D%27%23d9423a%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%276.2%27%20fill%3D%27%2316191b%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%273.6%27%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%27.9%27%20stroke-opacity%3D%27.7%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%271.2%27%20fill%3D%27%23fff%27/%3E%0A%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -923,8 +923,8 @@ function buildChunk(ci){
         addBox(D,x,y,z,0.3*sc,1.4*sc,0.3*sc,yaw,C(0x6b4a2f));
         addPyr(D,x,y+1.0*sc,z,3.2*sc,3.0*sc,yaw,g);
         addPyr(D,x,y+2.6*sc,z,2.4*sc,2.4*sc,yaw+0.4,g);
-        obs.push({x:x,z:z,r:1.0*sc});
-      }else{const bs=(2+rnd()*2)*sc;addPyr(D,x,y-0.2,z,bs,(1.2+rnd()*1.2)*sc,yaw,C(0x8a8d90));obs.push({x:x,z:z,r:bs*0.4});}
+        obs.push({x:x,z:z,r:1.0*sc,k:"tree",s:sc,yaw:yaw});
+      }else{const bs=(2+rnd()*2)*sc,rh=(1.2+rnd()*1.2)*sc;addPyr(D,x,y-0.2,z,bs,rh,yaw,C(0x8a8d90));obs.push({x:x,z:z,r:bs*0.4,k:"rock",b:bs,h:rh,yaw:yaw});}
     }else if(B.id==='snow'){
       if(kind<0.85){
         const g=C(0x2d5f4d).clone().offsetHSL(0,0,(rnd()-.5)*0.06);
@@ -933,8 +933,8 @@ function buildChunk(ci){
         addPyr(D,x,y+2.4*sc,z,2.4*sc,2.4*sc,yaw+0.3,g);
         addPyr(D,x,y+3.6*sc,z,1.6*sc,2.2*sc,yaw,g);
         addPyr(D,x,y+4.9*sc,z,0.7*sc,0.9*sc,yaw,C(0xffffff));
-        obs.push({x:x,z:z,r:1.0*sc});
-      }else{const bs=(2+rnd()*3)*sc;addPyr(D,x,y-0.2,z,bs,(1.4+rnd()*1.6)*sc,yaw,C(0x7b8796));obs.push({x:x,z:z,r:bs*0.4});}
+        obs.push({x:x,z:z,r:1.0*sc,k:"pine",s:sc,yaw:yaw});
+      }else{const bs=(2+rnd()*3)*sc,rh=(1.4+rnd()*1.6)*sc;addPyr(D,x,y-0.2,z,bs,rh,yaw,C(0x7b8796));obs.push({x:x,z:z,r:bs*0.4,k:"rock",b:bs,h:rh,yaw:yaw});}
     }else{
       if(kind<0.3){
         const g=C(0x5f8f4a);
@@ -943,8 +943,8 @@ function buildChunk(ci){
         addBox(D,x+0.85*sc,y+1.3*sc,z,0.35*sc,1.1*sc,0.35*sc,yaw,g);
         addBox(D,x-0.5*sc,y+1.9*sc,z,0.9*sc,0.35*sc,0.35*sc,yaw,g);
         addBox(D,x-0.85*sc,y+1.9*sc,z,0.35*sc,0.9*sc,0.35*sc,yaw,g);
-        obs.push({x:x,z:z,r:0.9*sc});
-      }else{const bs=(2+rnd()*4)*sc;addPyr(D,x,y-0.2,z,bs,(1+rnd()*2.2)*sc,yaw,C(rnd()<0.5?0xb5835a:0x9a6a48));obs.push({x:x,z:z,r:bs*0.4});}
+        obs.push({x:x,z:z,r:0.9*sc,k:"cactus",s:sc,yaw:yaw});
+      }else{const bs=(2+rnd()*4)*sc,rh=(1+rnd()*2.2)*sc;addPyr(D,x,y-0.2,z,bs,rh,yaw,C(rnd()<0.5?0xb5835a:0x9a6a48));obs.push({x:x,z:z,r:bs*0.4,k:"rock",b:bs,h:rh,yaw:yaw});}
     }
   }
   for(const side of [-1,1]){ // v3.2: world-edge walls
@@ -1445,10 +1445,23 @@ const VZ={ok:false,pk:1,tgt:1,rvA:0,yaw:0,pitch:0,idle:0,drag:false,of:0,ot:0,fT
     }
     function wall(R,i,j,d,h){at(A,j,d);at(B,j+1,d);C[0]=B[0];C[1]=B[1];D[0]=A[0];D[1]=A[1];quadAt(R,i,A,B,C,D,0,h);}
 
-    /* ---- obstacles (trees / rocks / cacti are drawn as grey posts) ---- */
-    const OBS=36,M_OBS=new THREE.MeshLambertMaterial({color:0xc4c5cc});
-    const obsG=new THREE.CylinderGeometry(1,1,2.4,10);
-    const obs=[];for(let i=0;i<OBS;i++){const m=new THREE.Mesh(obsG,M_OBS);m.visible=false;sc.add(m);obs.push(m);}
+    /* ---- obstacles: trees, pines, rocks and cacti are rebuilt with the same shapes, proportions and rotation as in the game world ---- */
+    const OBS=60,M_OBS=new THREE.MeshLambertMaterial({color:0xc4c5cc}),M_OBS2=new THREE.MeshLambertMaterial({color:0xa9aab3}),M_OBS3=new THREE.MeshLambertMaterial({color:0xf4f4f7});
+    const pyrGeo=new THREE.ConeGeometry(Math.SQRT1_2,1,4,1);pyrGeo.rotateY(Math.PI/4);pyrGeo.translate(0,0.5,0);   // unit square-based pyramid, base on y=0
+    const boxGeo=new THREE.BoxGeometry(1,1,1);boxGeo.translate(0,0.5,0);
+    function part(g,geo,mat,sx,sy,sz,x,y,z,ry){const m=new THREE.Mesh(geo,mat);m.scale.set(sx,sy,sz);m.position.set(x,y,z);if(ry)m.rotation.y=ry;g.add(m);return m;}
+    const pyr=(g,mat,b,h,y,ry)=>part(g,pyrGeo,mat,b,h,b,0,y,0,ry),bx=(g,mat,w,h,d,x,y,z)=>part(g,boxGeo,mat,w,h,d,x,y,z,0);
+    const OB={
+      tree:g=>{bx(g,M_OBS2,0.3,1.4,0.3,0,0,0);pyr(g,M_OBS,3.2,3.0,1.0,0);pyr(g,M_OBS,2.4,2.4,2.6,0.4);},
+      pine:g=>{bx(g,M_OBS2,0.3,1.2,0.3,0,0,0);pyr(g,M_OBS,3.2,2.6,1.0,0);pyr(g,M_OBS,2.4,2.4,2.4,0.3);pyr(g,M_OBS,1.6,2.2,3.6,0);pyr(g,M_OBS3,0.7,0.9,4.9,0);},
+      rock:g=>{pyr(g,M_OBS2,1,1,0,0);},
+      cactus:g=>[bx(g,M_OBS,0.55,3.2,0.55,0,0,0),bx(g,M_OBS,0.9,0.35,0.35,0.5,1.3,0),bx(g,M_OBS,0.35,1.1,0.35,0.85,1.3,0),
+                 bx(g,M_OBS,0.9,0.35,0.35,-0.5,1.9,0),bx(g,M_OBS,0.35,0.9,0.35,-0.85,1.9,0)]
+    };
+    const pool={};for(const k in OB)pool[k]={a:[],n:0};
+    function takeObs(kind){const P=pool[kind];let g=P.a[P.n];if(!g){g=new THREE.Group();g.userData.kids=OB[kind](g);sc.add(g);P.a.push(g);}P.n++;g.visible=true;return g;}
+    function endObs(){for(const k in pool){const P=pool[k];for(let i=P.n;i<P.a.length;i++)P.a[i].visible=false;P.n=0;}}
+    function hideObs(){for(const k in pool){const P=pool[k];for(let i=0;i<P.a.length;i++)P.a[i].visible=false;P.n=0;}}
 
     function updateRoad(){
       const c=Math.cos(car.h),s=Math.sin(car.h),i0=Math.max(0,car.idx-NB),cj=car.idx-i0;
@@ -1469,26 +1482,31 @@ const VZ={ok:false,pk:1,tgt:1,rvA:0,yaw:0,pitch:0,idle:0,drag:false,of:0,ot:0,fT
         else{NIL(rPathL,j);NIL(rPathR,j);}
       }
       for(const R of ribbons)R.g.attributes.position.needsUpdate=true;
-      // obstacles
+      // obstacles: real shapes (trees, pines, rocks, cacti) at their true size and rotation
       let k=0;const cc=Math.floor(car.idx/N);
       for(let ci=cc-1;ci<=cc+4&&k<OBS;ci++){
         const ch=chunks.get(ci);if(!ch)continue;
         for(const o of ch.obs){
+          if(!o.k)continue;
           const dx=o.x-car.x,dz=o.z-car.z,lx=dx*c-dz*s,lz=dx*s+dz*c;
-          if(lz<-14||lz>85||Math.abs(lx)>26)continue;
-          const m=obs[k++];m.visible=true;m.position.set(lx,1.1,lz);m.scale.set(Math.max(o.r,0.5)*0.8,1,Math.max(o.r,0.5)*0.8);
+          if(lz<-14||lz>85||Math.abs(lx)>30)continue;
+          const g=takeObs(o.k);k++;
+          g.position.set(lx,0,lz);
+          if(o.k==='rock'){g.position.y=-0.2;g.scale.set(o.b,o.h,o.b);g.rotation.y=o.yaw-car.h;}
+          else if(o.k==='cactus'){g.scale.setScalar(o.s);g.rotation.y=-car.h;for(const m of g.userData.kids)m.rotation.y=o.yaw;}   // arms keep world-axis offsets, like the game mesh
+          else{g.scale.setScalar(o.s);g.rotation.y=o.yaw-car.h;}
           if(k>=OBS)break;
         }
       }
-      for(;k<OBS;k++)obs[k].visible=false;
+      endObs();
     }
 
     /* ---- theme ---- */
     VZ.setTheme=function(dark){
       VZ.dark=dark;
-      const P=dark?{fog:0x1a1b1f,road:0x2c2d33,line:0x8a8c96,rail:0x474950,pg:0x666873,pb:0x4f7dff,obs:0x3b3d44,sh:.45}
-                  :{fog:0xeeeef2,road:0xdadbe1,line:0xffffff,rail:0xbfc0c8,pg:0xb2b4bd,pb:0x3e6ae1,obs:0xc4c5cc,sh:1};
-      fogC.set(P.fog);M_ROAD.color.set(P.road);M_LINE.color.set(P.line);M_RAIL.color.set(P.rail);M_OBS.color.set(P.obs);
+      const P=dark?{fog:0x1a1b1f,road:0x2c2d33,line:0x8a8c96,rail:0x474950,pg:0x666873,pb:0x4f7dff,obs:0x3b3d44,obs2:0x2d2f35,obs3:0x6b6d77,sh:.45}
+                  :{fog:0xeeeef2,road:0xdadbe1,line:0xffffff,rail:0xbfc0c8,pg:0xb2b4bd,pb:0x3e6ae1,obs:0xc4c5cc,obs2:0xa9aab3,obs3:0xf4f4f7,sh:1};
+      fogC.set(P.fog);M_ROAD.color.set(P.road);M_LINE.color.set(P.line);M_RAIL.color.set(P.rail);M_OBS.color.set(P.obs);M_OBS2.color.set(P.obs2);M_OBS3.color.set(P.obs3);
       VZ.pathGrey=P.pg;VZ.pathBlue=P.pb;shadow.material.opacity=P.sh;
     };
     VZ.setTheme(false);
@@ -1536,8 +1554,8 @@ const VZ={ok:false,pk:1,tgt:1,rvA:0,yaw:0,pitch:0,idle:0,drag:false,of:0,ot:0,fT
       for(const R of ribbons)R.m.visible=showRoad;
       M_ROAD.opacity=M_LINE.opacity=M_RAIL.opacity=M_PATH.opacity=1-e;
       M_PATH.color.setHex(auto?VZ.pathBlue:VZ.pathGrey);
-      for(const o of obs)if(pk>0.3)o.visible=false;
       if(showRoad)updateRoad();
+      if(pk>0.3)hideObs();
       // camera
       const lenK=clamp(VC.cl/2.05,0.85,1.85);
       dPos.set(0,3.6*lenK+0.7,-(7.4*lenK+1.0));dTgt.set(0,0.5,6+3*lenK);
