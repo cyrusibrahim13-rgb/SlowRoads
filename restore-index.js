@@ -150,8 +150,8 @@ function createIconIco(png) {
   directory.writeUInt16LE(0, 0);
   directory.writeUInt16LE(1, 2);
   directory.writeUInt16LE(1, 4);
-  directory.writeUInt8(size === 256 ? 0 : size, 6);
-  directory.writeUInt8(size === 256 ? 0 : size, 7);
+  directory.writeUInt8(size > 255 ? 0 : size, 6);
+  directory.writeUInt8(size > 255 ? 0 : size, 7);
   directory.writeUInt16LE(1, 10);
   directory.writeUInt16LE(32, 12);
   directory.writeUInt32LE(png.length, 14);
