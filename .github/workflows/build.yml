@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-latest
+          - os: xcode-27
             name: macOS Universal
             files: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
           - os: windows-latest
@@ -36,6 +36,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      - name: Verify Xcode and macOS SDK
+        if: startsWith(matrix.name, 'macOS')
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcode_version="$(xcodebuild -version | awk 'NR == 1 { print $2 }')"
+          sdk_version="$(xcrun --sdk macosx --show-sdk-version)"
+          echo "Xcode: $xcode_version"
+          echo "macOS SDK: $sdk_version"
+          test "$xcode_version" = "27.2"
+          test "$sdk_version" = "27.2"
 
       - name: Check macOS signing configuration
         if: startsWith(matrix.name, 'macOS')
