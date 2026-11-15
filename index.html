@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SlowRoads: Endless Driving</title>
-<!-- v5.0: Tesla-style centre display -->
+<!-- v6.3: map shows only the real road + real scenery (no fake intersections / places) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2064%2064%27%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2731%27%20fill%3D%27%23fff%27%20stroke%3D%27%23e2e0db%27%20stroke-width%3D%271%27/%3E%0A%3Cg%20fill%3D%27none%27%20stroke%3D%27%2316191b%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2721%27%20stroke-width%3D%274.6%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2717.6%27%20stroke-width%3D%27.7%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.45%27/%3E%0A%3Cpath%20d%3D%27M11.4%2030.5%20Q20%2036.5%2027.4%2035.6%20M52.6%2030.5%20Q44%2036.5%2036.6%2035.6%27%20stroke-width%3D%273.4%27/%3E%0A%3Cpath%20d%3D%27M32%2036%20V52.5%27%20stroke-width%3D%273.6%27/%3E%0A%3Cpath%20d%3D%27M32%2011%20V15.5%27%20stroke-width%3D%272.2%27%20stroke%3D%27%2316191b%27/%3E%0A%3C/g%3E%0A%3Cpath%20d%3D%27M30%2011.2h4v4.6h-4z%27%20fill%3D%27%23d9423a%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%276.2%27%20fill%3D%27%2316191b%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%273.6%27%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%27.9%27%20stroke-opacity%3D%27.7%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%271.2%27%20fill%3D%27%23fff%27/%3E%0A%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -408,7 +408,7 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
       <div class="nLbl">Endless road</div>
       <div class="nBtns"><button class="nAp" id="navAp" data-act="ap" title="Autopilot (F)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.2"/><path d="M3 11.2c3.4.9 5.8 1.9 7 3.1M21 11.2c-3.4.9-5.8 1.9-7 3.1M12 14.6V21"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/></svg></button><button class="nCancel" data-act="cancel" title="Turn off autopilot &amp; cruise">Cancel</button><button class="nMore" data-act="menu" title="Settings (Esc)"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button></div>
     </div>
-    <div id="mapPill" class="dr"><b>SR-1 N</b><span id="mapRoad">European Hills</span></div>
+    <div id="mapPill" class="dr"><b>Slow Road</b><span id="mapRoad">European Hills</span></div>
     <div class="mStrip dr">
       <div class="mArt"></div>
       <div class="mTxt"><b class="mTitle">Slow Roads</b><span class="mSub">Car · Gas</span><span class="mSrc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 11a8 8 0 0 1 8 8M4 5a14 14 0 0 1 14 14"/><circle cx="5" cy="19" r="1.5" fill="currentColor"/></svg><em class="mScene" style="font-style:normal">Hills</em></span></div>
@@ -2425,50 +2425,10 @@ function fitTesla(){
 window.addEventListener('resize',fitTesla);
 
 /* ---------------- procedural map tiles (neighbourhood streets, parks, water) ---------------- */
-const TILE_PX=1024,TILE_M=6400,MCOL={
-  light:{land:{hills:'#e6e8e4',desert:'#ece7de',snow:'#eff2f6'},park:'#d5e6cd',water:'#cde0ee',street:'#fafafb',streetEdge:'rgba(0,0,0,.05)',hwy:'#ffffff',hwyEdge:'#c9cacf',txt:'#6a6d74',halo:'rgba(255,255,255,.85)',route:'#3e6ae1',routeEdge:'#ffffff',roadFill:'#ffffff',roadEdge:'#c3c5cb',shield:'#ffffff',shieldTx:'#2a2d33'},
-  dark:{land:{hills:'#26292a',desert:'#2b2927',snow:'#292d32'},park:'#2a3a2f',water:'#223242',street:'#3a3c42',streetEdge:'rgba(0,0,0,.25)',hwy:'#4d5058',hwyEdge:'#17181b',txt:'#a6a9b1',halo:'rgba(20,21,24,.85)',route:'#4f7dff',routeEdge:'#14151a',roadFill:'#50535b',roadEdge:'#17181b',shield:'#2d2f35',shieldTx:'#eceef2'}};
-const MP={cy:198,S:0.17,tiles:[null,null],labels:null,dark:false,frame:0,px:0,py:0,drag:false,idle:0,lx:0,ly:0};
-const PLACES=[['Willow Park','park'],['Cedar Ridge School','school'],['Fairview Market','shop'],['Lakeside Park','park'],['Oak Hollow Library','school'],['Summit Café','shop'],['Maple Grove','park'],['Quarry Park','park'],['Pine Valley High','school'],['Sunset Diner','shop'],['Riverbend Trail','park'],['Harbor Inn','shop'],['Birch Elementary','school'],['Stonegate Market','shop']];
-function mapRand(seed){return mulberry32((WORLD_SEED^seed)>>>0);}
-function mkLabels(){
-  const r=mapRand(0x1234abcd),L=[];
-  for(let i=0;i<14;i++){const p=PLACES[i%PLACES.length];L.push({x:r()*TILE_PX,y:r()*TILE_PX,n:p[0],k:p[1]});}
-  return L;
-}
-function mkTile(dark){
-  const C=MCOL[dark?'dark':'light'],c=document.createElement('canvas');c.width=c.height=TILE_PX;
-  const g=c.getContext('2d'),r=mapRand(0x77aa11),T=TILE_PX;
-  const wrap=f=>{for(let ox=-1;ox<=1;ox++)for(let oy=-1;oy<=1;oy++)f(ox*T,oy*T);};
-  g.lineCap='round';g.lineJoin='round';
-  const blob=(cx,cy,rad,fill)=>{
-    const n=12,P=[];for(let i=0;i<n;i++){const a=i/n*Math.PI*2,k=rad*(0.7+r()*0.6);P.push([cx+Math.cos(a)*k,cy+Math.sin(a)*k*0.8]);}
-    g.fillStyle=fill;
-    wrap((dx,dy)=>{g.beginPath();for(let i=0;i<n;i++){const a=P[i],b=P[(i+1)%n],mx=(a[0]+b[0])/2+dx,my=(a[1]+b[1])/2+dy;if(!i)g.moveTo(mx,my);else g.quadraticCurveTo(a[0]+dx,a[1]+dy,mx,my);}g.closePath();g.fill();});
-  };
-  for(let i=0;i<3;i++)blob(r()*T,r()*T,40+r()*60,C.water);
-  for(let i=0;i<11;i++)blob(r()*T,r()*T,22+r()*38,C.park);
-  // grid-like neighbourhoods
-  g.strokeStyle=C.street;g.lineWidth=1.4;
-  for(let i=0;i<14;i++){
-    const cx=r()*T,cy=r()*T,w=90+r()*120,h=70+r()*100,a=r()*Math.PI,sp=11+r()*7;
-    wrap((dx,dy)=>{g.save();g.translate(cx+dx,cy+dy);g.rotate(a);g.beginPath();g.rect(-w/2,-h/2,w,h);g.clip();g.beginPath();
-      for(let x=-w/2;x<=w/2;x+=sp){g.moveTo(x,-h/2);g.lineTo(x,h/2);}for(let y=-h/2;y<=h/2;y+=sp*1.2){g.moveTo(-w/2,y);g.lineTo(w/2,y);}g.stroke();g.restore();});
-  }
-  // winding streets
-  const walk=(n,seg,turn,lw,col,edge)=>{
-    let x=r()*T,y=r()*T,a=r()*6.28;const P=[[x,y]];
-    for(let i=0;i<n;i++){a+=(r()-.5)*turn;x+=Math.cos(a)*seg*(0.6+r()*.8);y+=Math.sin(a)*seg*(0.6+r()*.8);P.push([x,y]);}
-    const draw=(w,s)=>{g.strokeStyle=s;g.lineWidth=w;wrap((dx,dy)=>{g.beginPath();g.moveTo(P[0][0]+dx,P[0][1]+dy);for(let i=1;i<P.length;i++)g.lineTo(P[i][0]+dx,P[i][1]+dy);g.stroke();});};
-    if(edge)draw(lw+2.2,edge);draw(lw,col);
-  };
-  for(let i=0;i<150;i++)walk(5+Math.floor(r()*7),22,1.3,1.3,C.street,null);
-  for(let i=0;i<9;i++)walk(28,34,0.35,2,C.street,C.streetEdge);
-  for(let i=0;i<5;i++)walk(40,30,0.22,3.2,C.hwy,C.hwyEdge);
-  return c;
-}
-function mapTile(){const d=VZ.dark?1:0;return MP.tiles[d]||(MP.tiles[d]=mkTile(!!d));}
-
+const MCOL={
+  light:{laneMark:'#c9ccd3',obs:{hills:'#b9d2ae',desert:'#d8c3a2',snow:'#c9d6e3'},land:{hills:'#e6e8e4',desert:'#ece7de',snow:'#eff2f6'},park:'#d5e6cd',water:'#cde0ee',street:'#fafafb',streetEdge:'rgba(0,0,0,.05)',hwy:'#ffffff',hwyEdge:'#c9cacf',txt:'#6a6d74',halo:'rgba(255,255,255,.85)',route:'#3e6ae1',routeEdge:'#ffffff',roadFill:'#ffffff',roadEdge:'#c3c5cb',shield:'#ffffff',shieldTx:'#2a2d33'},
+  dark:{laneMark:'#7c808a',obs:{hills:'#34493a',desert:'#4a4338',snow:'#3d4650'},land:{hills:'#26292a',desert:'#2b2927',snow:'#292d32'},park:'#2a3a2f',water:'#223242',street:'#3a3c42',streetEdge:'rgba(0,0,0,.25)',hwy:'#4d5058',hwyEdge:'#17181b',txt:'#a6a9b1',halo:'rgba(20,21,24,.85)',route:'#4f7dff',routeEdge:'#14151a',roadFill:'#50535b',roadEdge:'#17181b',shield:'#2d2f35',shieldTx:'#eceef2'}};
+const MP={cy:198,S:0.17,dark:false,frame:0,px:0,py:0,drag:false,idle:0,lx:0,ly:0};
 /* ---------------- map drawing ---------------- */
 const mctx=$('mapCv').getContext('2d');
 /* drag the map to look around (park + drive); double-click re-centres */
@@ -2497,23 +2457,18 @@ function drawMap(dt){
   const Sk=MP.S*k,cx=(230+MP.px)*k,cy=(MP.cy+MP.py)*k,ch=Math.cos(car.h),sh=Math.sin(car.h);
   c.setTransform(1,0,0,1,0,0);
   c.fillStyle=C.land[biome.id]||C.land.hills;c.fillRect(0,0,W,H);
-  // tiles (world-aligned, rotated so the car always points up)
-  const a=-Sk*ch,b=-Sk*sh,cc=Sk*sh,d=-Sk*ch,e=cx-(a*car.x+cc*car.z),f=cy-(b*car.x+d*car.z);
-  const tile=mapTile(),ti=Math.floor(car.x/TILE_M),tj=Math.floor(car.z/TILE_M);
-  c.setTransform(a,b,cc,d,e,f);
-  for(let i=ti-1;i<=ti+1;i++)for(let j=tj-1;j<=tj+1;j++)c.drawImage(tile,i*TILE_M,j*TILE_M,TILE_M,TILE_M);
-  c.setTransform(1,0,0,1,0,0);
   const px=(x,z)=>{const dx=x-car.x,dz=z-car.z;return [cx-(dx*ch-dz*sh)*Sk,cy-(dx*sh+dz*ch)*Sk];};
-  // labels (kept upright)
-  if(!MP.labels)MP.labels=mkLabels();
-  c.font='600 '+(9.5*k).toFixed(1)+'px Montserrat,"Segoe UI",sans-serif';c.textBaseline='middle';
-  const kc={park:'#4fae6a',school:'#8c93a0',shop:'#3b94dd'},m=TILE_M/TILE_PX;
-  for(let i=ti-1;i<=ti+1;i++)for(let j=tj-1;j<=tj+1;j++)for(const L of MP.labels){
-    const p=px(i*TILE_M+L.x*m,j*TILE_M+L.y*m);
-    if(p[0]<-60*k||p[0]>W+10*k||p[1]<0||p[1]>H-64*k)continue;
-    c.fillStyle=kc[L.k];c.beginPath();c.arc(p[0],p[1],5.5*k,0,6.283);c.fill();
-    c.fillStyle='#fff';c.beginPath();c.arc(p[0],p[1],1.9*k,0,6.283);c.fill();
-    c.lineWidth=3*k;c.strokeStyle=C.halo;c.strokeText(L.n,p[0]+9*k,p[1]);c.fillStyle=C.txt;c.fillText(L.n,p[0]+9*k,p[1]);
+  // real scenery: the trees, rocks and cacti that actually stand beside the road in the 3D world
+  {
+    const cci=Math.floor(car.idx/N),oc=MCOL[VZ.dark?'dark':'light'].obs[biome.id]||'#8c93a0';
+    const rr=(H-cy)/Sk+80;
+    for(let q=cci-Math.ceil(rr/(STEP*N))-1;q<=cci+Math.ceil(cy/Sk/(STEP*N))+2;q++){
+      const chk=chunks.get(q);if(!chk)continue;
+      for(const o of chk.obs){
+        const p=px(o.x,o.z);if(p[0]<-6*k||p[0]>W+6*k||p[1]<-6*k||p[1]>H-60*k)continue;
+        c.fillStyle=oc;c.beginPath();c.arc(p[0],p[1],Math.max(1.3*k,o.r*Sk*1.3),0,6.283);c.fill();
+      }
+    }
   }
   // route = the road itself
   const ahead=Math.min(900,Math.max(0,Math.ceil(cy/Sk/STEP))+14),backM=clamp((H-cy)/Sk+60,60,3500),i0=Math.max(0,car.idx-Math.ceil(backM/STEP)),i1=car.idx+ahead;
@@ -2529,15 +2484,9 @@ function drawMap(dt){
   };
   c.lineCap='round';c.lineJoin='round';
   path(0,9*k,C.roadEdge,false);path(0,6.4*k,C.roadFill,false);
+  // real lane markings: the dashed centre line follows the actual road
+  c.setLineDash([5*k,6*k]);c.lineCap='butt';path(0,1.1*k,C.laneMark,false);c.setLineDash([]);c.lineCap='round';
   path(ci,8.2*k,C.routeEdge,true);path(ci,5.4*k,C.route,true);
-  // shields
-  c.font='700 '+(8*k).toFixed(1)+'px Montserrat,"Segoe UI",sans-serif';c.textAlign='center';
-  for(let n=Math.ceil(i0/160)*160;n<=i1;n+=160){
-    if(Math.abs(n-car.idx)<28)continue;const p=px(pts[n].x,pts[n].z);if(p[1]<12*k||p[1]>H-70*k)continue;
-    c.fillStyle=C.shield;c.strokeStyle=C.roadEdge;c.lineWidth=1.2*k;c.beginPath();c.roundRect?c.roundRect(p[0]-13*k,p[1]-8*k,26*k,16*k,5*k):c.rect(p[0]-13*k,p[1]-8*k,26*k,16*k);c.fill();c.stroke();
-    c.fillStyle=C.shieldTx;c.fillText('SR 1',p[0],p[1]+0.5*k);
-  }
-  c.textAlign='start';
   // car arrow
   c.fillStyle='#e82127';c.strokeStyle='#fff';c.lineWidth=2.2*k;c.beginPath();
   c.moveTo(cx,cy-12*k);c.lineTo(cx+8.5*k,cy+9*k);c.lineTo(cx,cy+4.5*k);c.lineTo(cx-8.5*k,cy+9*k);c.closePath();c.stroke();c.fill();
