@@ -37,11 +37,21 @@ jobs:
         with:
           node-version: 22
 
+      - name: Select Xcode 27.2
+        if: startsWith(matrix.name, 'macOS')
+        shell: bash
+        run: |
+          set -euo pipefail
+          developer_dir="/Applications/Xcode_27.2.app/Contents/Developer"
+          test -d "$developer_dir"
+          echo "DEVELOPER_DIR=$developer_dir" >> "$GITHUB_ENV"
+
       - name: Verify Xcode and macOS SDK
         if: startsWith(matrix.name, 'macOS')
         shell: bash
         run: |
           set -euo pipefail
+          test "$DEVELOPER_DIR" = "/Applications/Xcode_27.2.app/Contents/Developer"
           xcode_version="$(xcodebuild -version | awk 'NR == 1 { print $2 }')"
           sdk_version="$(xcrun --sdk macosx --show-sdk-version)"
           echo "Xcode: $xcode_version"
