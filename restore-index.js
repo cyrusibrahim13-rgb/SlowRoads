@@ -144,6 +144,35 @@ function cropIcon(source) {
     pngChunk('IEND', Buffer.alloc(0))
   ]);
 }
+
+function resizePng(source, size) {
+  const { width, height, pixels } = decodePng(source);
+  const resized = Buffer.alloc(size * size * 4);
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const sourceX = Math.min(width - 1, Math.floor((x * width) / size));
+      const sourceY = Math.min(height - 1, Math.floor((y * height) / size));
+      const sourceOffset = (sourceY * width + sourceX) * 4;
+      pixels.copy(resized, (y * size + x) * 4, sourceOffset, sourceOffset + 4);
+    }
+  }
+
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(size, 0);
+  header.writeUInt32BE(size, 4);
+  header[8] = 8;
+  header[9] = 6;
+  const rows = [];
+  for (let y = 0; y < size; y += 1) {
+    rows.push(Buffer.from([0]), resized.subarray(y * size * 4, (y + 1) * size * 4));
+  }
+  return Buffer.concat([
+    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+    pngChunk('IHDR', header),
+    pngChunk('IDAT', zlib.deflateSync(Buffer.concat(rows))),
+    pngChunk('IEND', Buffer.alloc(0))
+  ]);
+}
 function createIconIco(png) {
   const size = png.readUInt32BE(16);
   const directory = Buffer.alloc(22);
@@ -168,6 +197,9 @@ fs.copyFileSync(
   path.join(distDirectory, 'index.html')
 );
 
-const iconPng = cropIcon(fs.readFileSync(path.join(iconsDirectory, 'SlowRoads_Logo.png')));
+const iconPng = resizePng(
+  cropIcon(fs.readFileSync(path.join(iconsDirectory, 'SlowRoads_Logo.png'))),
+  128
+);
 fs.writeFileSync(path.join(iconsDirectory, 'icon.png'), iconPng);
 fs.writeFileSync(path.join(iconsDirectory, 'icon.ico'), createIconIco(iconPng));
