@@ -1,6 +1,6 @@
 [package]
 name = "slowroads"
-version = "2.5.1"
+version = "6.2.1"
 description = "Slow Roads desktop app"
 authors = [""]
 edition = "2021"
