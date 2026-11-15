@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SlowRoads: Endless Driving</title>
-<!-- v6.3: map shows only the real road + real scenery (no fake intersections / places) -->
+<!-- v6.5: menus (shortcuts, vehicle, tuning, settings) open on the left side of the view. v6.4: frunk opens in the game, unified taskbar icons, headlight menu, drive seatbelt, max-speed icon, cleaner drive playback bar, reverse view, park drag fix -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2064%2064%27%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2731%27%20fill%3D%27%23fff%27%20stroke%3D%27%23e2e0db%27%20stroke-width%3D%271%27/%3E%0A%3Cg%20fill%3D%27none%27%20stroke%3D%27%2316191b%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2721%27%20stroke-width%3D%274.6%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2717.6%27%20stroke-width%3D%27.7%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.45%27/%3E%0A%3Cpath%20d%3D%27M11.4%2030.5%20Q20%2036.5%2027.4%2035.6%20M52.6%2030.5%20Q44%2036.5%2036.6%2035.6%27%20stroke-width%3D%273.4%27/%3E%0A%3Cpath%20d%3D%27M32%2036%20V52.5%27%20stroke-width%3D%273.6%27/%3E%0A%3Cpath%20d%3D%27M32%2011%20V15.5%27%20stroke-width%3D%272.2%27%20stroke%3D%27%2316191b%27/%3E%0A%3C/g%3E%0A%3Cpath%20d%3D%27M30%2011.2h4v4.6h-4z%27%20fill%3D%27%23d9423a%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%276.2%27%20fill%3D%27%2316191b%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%273.6%27%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%27.9%27%20stroke-opacity%3D%27.7%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%271.2%27%20fill%3D%27%23fff%27/%3E%0A%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -273,6 +273,12 @@ kbd{border-color:rgba(95,242,255,.4);color:#e6fdff;box-shadow:0 0 6px rgba(95,24
 .clim i{font-style:normal;font-size:15px;color:#8c8e96;cursor:pointer;padding:6px 4px;line-height:1}
 .clim i:hover{color:#fff}
 #volPop.show{opacity:1;pointer-events:auto;transform:none}
+#lightPop{position:absolute;left:50%;bottom:72px;z-index:8;display:flex;gap:6px;padding:8px 10px;border-radius:12px;background:rgba(36,37,41,.97);color:#e9e9ee;box-shadow:0 6px 22px rgba(0,0,0,.4);opacity:0;pointer-events:none;transform:translate(-50%,6px);transition:opacity .2s,transform .2s}
+#lightPop.show{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+#lightPop button{width:44px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#b9bcc4;transition:background .2s,color .2s}
+#lightPop button:hover{background:rgba(255,255,255,.12)}
+#lightPop button svg{width:28px;height:24px}
+#lightPop button.on{color:#27b26a}#lightPop #lpHigh.on{color:#5b8cff}
 #volPop svg{width:18px;height:18px;flex:none}
 #volRange{flex:1;accent-color:#fff;height:18px}
 /* ---- panels opened from the screen (Tesla look) ---- */
@@ -305,7 +311,7 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
 #lightStack{position:absolute;left:14px;top:88px;display:flex;flex-direction:column;gap:12px;z-index:4}
 #cardMedia{left:16px;top:588px;width:428px;height:92px;z-index:4}
 #spdBlk{position:absolute;left:18px;top:76px;z-index:3}
-#setBox{position:absolute;left:324px;top:80px;z-index:3}
+#setBox{position:absolute;right:18px;top:80px;z-index:3}
 #tesla.park #chips{left:230px;top:84px;transform:translateX(-50%);justify-content:center;width:360px}
 #tesla.drive #chips{left:18px;top:184px;transform:none;justify-content:flex-start;width:300px}
 #tesla .gauge{position:absolute;width:128px;height:128px;overflow:visible;z-index:3;top:268px}
@@ -325,16 +331,19 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
 .mStrip button{width:30px;height:30px;flex:none}
 .mStrip .sep{width:1px;height:22px;background:var(--ln);margin:0 6px;flex:none}
 .mStrip .gap{flex:1}
+#tesla #beltDr{position:absolute;left:10px;bottom:64px;z-index:3;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,.18);color:#e82127}
+#tesla #beltDr.on{color:var(--sub)}
+#tesla #beltDr svg{width:22px;height:20px}
 #tsTask{position:absolute;left:0;bottom:0;width:460px;height:64px;z-index:6;display:flex;align-items:center;justify-content:space-between;padding:0 8px;color:#e9e9ee;background:linear-gradient(180deg,#17181a,#0c0c0e);border-top:1px solid #2b2c30}
 #tsTask .grp{display:flex;align-items:center;gap:2px}
 .tb{position:relative;width:36px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:10px;color:#e9e9ee;cursor:pointer;transition:background .2s,color .2s}
 .tb>svg{width:23px;height:23px}
-.tile{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff}
-.tile svg{width:18px;height:18px}
+.tile{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:inherit;background:none!important}
+.tile svg{width:23px;height:23px}
 .clim{display:flex;align-items:center;gap:4px;font-size:17px;font-weight:400;color:#ececf0;min-width:62px;justify-content:center;font-variant-numeric:tabular-nums}
 #volPop{position:absolute;right:10px;bottom:72px;z-index:8;width:200px;padding:12px 14px;border-radius:12px;background:rgba(36,37,41,.97);color:#fff;display:flex;align-items:center;gap:10px;box-shadow:0 6px 22px rgba(0,0,0,.4);opacity:0;pointer-events:none;transform:translateY(6px);transition:opacity .2s,transform .2s}
-#kbPanel,#carPanel,#tunePanel{left:auto;right:calc(var(--tsw) + 28px);bottom:14px;max-height:calc(100vh - 28px);transform-origin:bottom right}
-#panel{right:calc(var(--tsw) + 28px);left:auto;top:68px;max-height:calc(100vh - 90px)}
+#kbPanel,#carPanel,#tunePanel{left:22px;right:auto;bottom:14px;max-height:calc(100vh - 28px);transform-origin:bottom left}
+#panel{left:22px;right:auto;top:68px;max-height:calc(100vh - 90px)}
 
 /* ---- v5.0 two separate screens: top = visualisation, bottom = map + menus ---- */
 #tsScreen2{height:460px}
@@ -390,7 +399,7 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
   <div id="spdBlk" class="dr"><div id="spd">0</div><div id="unit" data-act="unit" title="Tap to switch km/h ⇄ mph">KM/H</div><div id="thr"><div id="thrF"></div></div></div>
   <div id="setBox" class="dr"><div id="chips2">
     <span id="chipCruise"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.64 17.25A8.5 8.5 0 1 1 19.36 17.25"/><path d="M12 13l4.6-4.6"/><circle cx="12" cy="13" r="1.1" fill="currentColor"/></svg><b id="cruiseNum">100</b><small>CRUISE</small></span>
-    <span id="chipMax"><b id="maxNum">100</b><small>MAX</small></span></div></div>
+    <span id="chipMax"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.64 17.25A8.5 8.5 0 1 1 19.36 17.25"/><path d="M12 13l5.2-2.6"/><path d="M19.6 7.2 17.4 9"/><circle cx="12" cy="13" r="1.1" fill="currentColor"/></svg><b id="maxNum">100</b><small>MAX</small></span></div></div>
   <div id="chips">
     <span id="chipAuto" data-act="ap" title="Autopilot (F)">AUTO</span><span id="chipBoost" data-act="boost" title="Sport boost (Shift)">SPORT</span><span id="chipCam" data-act="cam" title="Camera view (C)">CHASE</span><span id="chipTime">15:30</span><span id="chipPwr">GAS</span><span id="regen" class="hidden" title="Power / regeneration"><i id="rgReg"></i><i id="rgPwr"></i><u></u><b id="rgThumb"></b></span>
   </div>
@@ -409,6 +418,7 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
       <div class="nBtns"><button class="nAp" id="navAp" data-act="ap" title="Autopilot (F)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.2"/><path d="M3 11.2c3.4.9 5.8 1.9 7 3.1M21 11.2c-3.4.9-5.8 1.9-7 3.1M12 14.6V21"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/></svg></button><button class="nCancel" data-act="cancel" title="Turn off autopilot &amp; cruise">Cancel</button><button class="nMore" data-act="menu" title="Settings (Esc)"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button></div>
     </div>
     <div id="mapPill" class="dr"><b>Slow Road</b><span id="mapRoad">European Hills</span></div>
+    <button id="beltDr" class="dr" data-act="belt" title="Seatbelt (click to fasten / release)"><svg viewBox="0 0 28 24" fill="currentColor"><circle cx="14" cy="5" r="2.6"/><path d="M11 9.5 8 20l3 .8 1.2-5.2h3.6L17 20.8l3-.8-3-10.5-2 5-.1 0zM8.5 8.5l11 9" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
     <div class="mStrip dr">
       <div class="mArt"></div>
       <div class="mTxt"><b class="mTitle">Slow Roads</b><span class="mSub">Car · Gas</span><span class="mSrc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 11a8 8 0 0 1 8 8M4 5a14 14 0 0 1 14 14"/><circle cx="5" cy="19" r="1.5" fill="currentColor"/></svg><em class="mScene" style="font-style:normal">Hills</em></span></div>
@@ -419,9 +429,7 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
       <button class="mPlay" data-act="mute" title="Sound on / mute (M)"></button>
       <button data-act="next" title="Next biome"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5l9 7-9 7zM17 5h2.4v14H17z"/></svg></button>
       <div class="sep"></div>
-      <button class="dim" data-act="queue" title="Keyboard shortcuts (K)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M3 6h14M3 12h14M3 18h8M18 15v6M15 18h6"/></svg></button>
-      <button class="dim" data-act="search" title="Settings (Esc)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg></button>
-      <button class="dim" data-act="eq" title="Engine tuning (T)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 3v18M12 3v18M18 3v18"/><circle cx="6" cy="14" r="2" fill="var(--card)"/><circle cx="12" cy="8" r="2" fill="var(--card)"/><circle cx="18" cy="16" r="2" fill="var(--card)"/></svg></button>
+      <button class="dim" data-act="search" title="Environment &amp; settings (Esc)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 19.5 9 8.5l4 6.5 2.5-3.5 6 8z"/><path d="M7.4 11.4 9 13l1.6-1.2"/></svg></button>
     </div>
   </div>
 
@@ -437,6 +445,11 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
       <button class="dim" data-act="search" title="Settings (Esc)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg></button>
     </div>
   </div>
+  <div id="lightPop">
+    <button id="lpLow" data-act="lights" title="Headlights (L)"><svg viewBox="0 0 28 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 4h3a8 8 0 0 1 0 16h-3z" fill="currentColor" stroke="none"/><path d="M2 6l9 2.5M2 11l9 2.5M2 16l9 2.5"/></svg></button>
+    <button id="lpAuto" data-act="autolights" title="Auto headlights"><svg viewBox="0 0 28 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 6h8M2 11h8M2 16h8"/><circle cx="18" cy="11" r="7"/><path d="M15.5 14.5 18 7.5l2.5 7M16.4 12.5h3.2"/></svg></button>
+    <button id="lpHigh" data-act="highbeam" title="High beams"><svg viewBox="0 0 28 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 4h3a8 8 0 0 1 0 16h-3z" fill="currentColor" stroke="none"/><path d="M2 6h9M2 12h9M2 18h9"/></svg></button>
+  </div>
   <div id="volPop"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9z"/></svg><input type="range" id="volRange" min="0" max="1" step="0.01" value="0.6"></div>
 
   <!-- taskbar -->
@@ -446,8 +459,7 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
       <div class="clim"><i data-act="clim" data-s="l" data-d="-1">‹</i><span id="climL">72</span><i data-act="clim" data-s="l" data-d="1">›</i></div>
     </div>
     <div class="grp">
-      <div class="tb" id="tbCam" data-act="cam" title="Camera view (C)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#22232a"/><circle cx="12" cy="12" r="7" fill="none" stroke="#a45cf2" stroke-width="3"/><circle cx="12" cy="12" r="3" fill="#6b3fb8"/><circle cx="10.8" cy="10.8" r="1" fill="#fff"/></svg></div>
-      <div class="tb" id="lightBtn" title="Headlights (L)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleX(-1)"><path d="M10.5 6.5H9a5.5 5.5 0 0 0 0 11h1.5z"/><path d="M14 8h7M14 12h7M14 16h7"/></svg></div>
+      <div class="tb" id="lightBtn" data-act="lightmenu" title="Headlights (L)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleX(-1)"><path d="M10.5 6.5H9a5.5 5.5 0 0 0 0 11h1.5z"/><path d="M14 8h7M14 12h7M14 16h7"/></svg></div>
       <div class="tb" id="cruiseBtn" title="Cruise control (Q)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.64 17.25A8.5 8.5 0 1 1 19.36 17.25"/><path d="M12 5.7V7M6.8 10l1.1.7M4.7 13H6"/><path d="M12 13l4.6-4.6M16.6 8.4h-3.3M16.6 8.4v3.3"/><circle cx="12" cy="13" r="1.1" fill="currentColor"/></svg></div>
       <div class="tb" id="engBtn" title="Tune car (T)"><div class="tile" style="background:#e8742c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9h9.5v8H7z"/><path d="M9.5 9V6.5h5V9"/><path d="M7 12H4.5M4.5 10v6"/><path d="M16.5 11H19l1.5 1.5V17"/><path d="M10 17v1.8M13.5 17v1.8"/></svg></div></div>
       <div class="tb" id="kbBtn" title="Keyboard shortcuts (K)"><div class="tile" style="background:#2c6bed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2.5"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg></div></div>
@@ -1377,7 +1389,7 @@ function buildMotoModel(){
    live from the road centre-line, lane lines, guard rails, obstacles and
    the blue / grey autopilot corridor.
    ===================================================================== */
-const VZ={ok:false,pk:1,tgt:1,yaw:0,pitch:0,idle:0,drag:false,of:0,ot:0,fT:0,tT:0,dark:false,CW:460,CH:400,k:1,
+const VZ={ok:false,pk:1,tgt:1,rvA:0,yaw:0,pitch:0,idle:0,drag:false,of:0,ot:0,fT:0,tT:0,dark:false,CW:460,CH:400,k:1,
   rect:{x:0,y:56,w:460,h:330},labels:null,apply(){},resize(){},update(){},setTheme(){}};
 (function buildViz(){
   try{
@@ -1506,12 +1518,14 @@ const VZ={ok:false,pk:1,tgt:1,yaw:0,pitch:0,idle:0,drag:false,of:0,ot:0,fT:0,tT:
     VZ.update=function(dt){
       VZ.pk+=clamp(VZ.tgt-VZ.pk,-dt/0.8,dt/0.8);
       if(VZ.tgt===0&&!VZ.drag){VZ.idle+=dt;if(VZ.idle>4){VZ.yaw=wrapPi(VZ.yaw);const f=Math.exp(-dt*3);VZ.yaw*=f;VZ.pitch*=f;}}   // drive: camera eases back behind the car a few seconds after you let go
+      {const want=(VZ.tgt===0&&car.vf<-0.5)?Math.PI:0;VZ.rvA+=clamp(want-VZ.rvA,-dt*3.2,dt*3.2);}   // v6.4: reversing swings the view round to the front of the car
       const pk=VZ.pk,e=pk*pk*(3-2*pk);
       const M=models[shownVeh];if(!M)return;
       // frunk / trunk lids swing open and shut
       {const st=dt/0.7;VZ.of+=clamp(VZ.fT-VZ.of,-st,st);VZ.ot+=clamp(VZ.tT-VZ.ot,-st,st);
        const fe=VZ.of*VZ.of*(3-2*VZ.of),te=VZ.ot*VZ.ot*(3-2*VZ.ot);
-       for(const k in models){const m=models[k];if(m.frunk)m.frunk.g.rotation.x=m.frunk.ang*fe;if(m.trunk)m.trunk.g.rotation.x=m.trunk.ang*te;}}
+       for(const k in models){const m=models[k];if(m.frunk)m.frunk.g.rotation.x=m.frunk.ang*fe;if(m.trunk)m.trunk.g.rotation.x=m.trunk.ang*te;}
+       for(const k in car.models){const m=car.models[k];if(m.frunk)m.frunk.g.rotation.x=m.frunk.ang*fe;if(m.trunk)m.trunk.g.rotation.x=m.trunk.ang*te;}}   // v6.4: the real car's frunk / trunk open too
       // wheels / steering / body attitude follow the game car
       const ws=car.wheelsSpin;for(let i=0;i<ws.length&&i<M.wheelsSpin.length;i++)M.wheelsSpin[i].rotation.x=ws[i].rotation.x;
       const fp=car.frontPivots;for(let i=0;i<fp.length&&i<M.frontPivots.length;i++)M.frontPivots[i].rotation.y=fp[i].rotation.y;
@@ -1528,10 +1542,10 @@ const VZ={ok:false,pk:1,tgt:1,yaw:0,pitch:0,idle:0,drag:false,of:0,ot:0,fT:0,tT:
       const lenK=clamp(VC.cl/2.05,0.85,1.85);
       dPos.set(0,3.6*lenK+0.7,-(7.4*lenK+1.0));dTgt.set(0,0.5,6+3*lenK);
       {const r0=dPos.length(),a0=Math.atan2(dPos.x,dPos.z),e0=Math.atan2(dPos.y,Math.hypot(dPos.x,dPos.z)),
-        a1=a0-VZ.yaw,e1=clamp(e0+VZ.pitch,0.04,1.3);
+        a1=a0-VZ.yaw+VZ.rvA,e1=clamp(e0+VZ.pitch,0.04,1.3);
        dPos.set(r0*Math.cos(e1)*Math.sin(a1),r0*Math.sin(e1),r0*Math.cos(e1)*Math.cos(a1));   // orbit the drive camera around the car
-       dTgt.lerp(carPt,clamp(Math.hypot(VZ.yaw,VZ.pitch)*3,0,1));}                            // ...and look at the car once orbited
-      const az=0.65+VZ.yaw,el=clamp(0.2+VZ.pitch,0.1,0.45),Dd=7.4*lenK*1.4;
+       dTgt.lerp(carPt,clamp(Math.hypot(VZ.yaw,VZ.pitch)*3+VZ.rvA*1.5,0,1));}                            // ...and look at the car once orbited
+      const az=0.65-VZ.yaw,el=clamp(0.2+VZ.pitch,0.1,0.45),Dd=7.4*lenK*1.4;
       pPos.set(Dd*Math.sin(az)*Math.cos(el),Dd*Math.sin(el)+0.6,Dd*Math.cos(az)*Math.cos(el));pTgt.set(0,0.75,0);
       cam.position.copy(lerp3(dPos,pPos,e,tmpP));cam.lookAt(lerp3(dTgt,pTgt,e,tmpT));
       cam.fov=55+(28-55)*e;
@@ -1748,7 +1762,6 @@ function playBelt(on){
 }
 $('boostChk').addEventListener('change',e=>setBoost(e.target.checked));
 $('hdChk').addEventListener('change',e=>setHeads(e.target.checked));
-$('lightBtn').onclick=()=>setHeads(!lightsEff);
 $('kbBtn').onclick=toggleKb;
 $('carBtn').onclick=toggleCar;
 
@@ -2525,14 +2538,14 @@ const ACT={
   frunk:()=>{VZ.fT=VZ.fT?0:1;lidLabels();},trunk:()=>{VZ.tT=VZ.tT?0:1;lidLabels();},
   mute:()=>{const m=$('mute');m.checked=!m.checked;applyVol();toast(m.checked?'Muted':'Sound on');hudForce=true;},
   volup:()=>stepVol(0.1),voldn:()=>stepVol(-0.1),next:()=>stepBiome(1),prev:()=>stepBiome(-1),
-  boost:()=>setBoost(!boostOn),queue:()=>toggleKb(),eq:()=>toggleTune(),lights:()=>setHeads(!lightsEff),autolights:()=>setAutoLights(!autoLights),highbeam:()=>setHighBeam(!highBeam),belt:()=>setBelt(!beltOn),
+  boost:()=>setBoost(!boostOn),queue:()=>toggleKb(),eq:()=>toggleTune(),lights:()=>setHeads(!lightsEff),lightmenu:()=>$('lightPop').classList.toggle('show'),autolights:()=>setAutoLights(!autoLights),highbeam:()=>setHighBeam(!highBeam),belt:()=>setBelt(!beltOn),
   vol:()=>$('volPop').classList.toggle('show'),
   clim:el=>{const s=el.dataset.s,d=+el.dataset.d;clim[s]=clamp(clim[s]+d*(UF===1?0.5:5/9),16,28);hudForce=true;}
 };
 $('tesla').addEventListener('click',e=>{
   const el=e.target.closest('[data-act]');
-  if(!el){if(!e.target.closest('#volPop'))$('volPop').classList.remove('show');return;}
-  const f=ACT[el.dataset.act];if(f){if(el.dataset.act!=='vol')$('volPop').classList.remove('show');f(el);}
+  if(!el){if(!e.target.closest('#volPop'))$('volPop').classList.remove('show');if(!e.target.closest('#lightPop'))$('lightPop').classList.remove('show');return;}
+  const f=ACT[el.dataset.act];if(f){if(el.dataset.act!=='vol')$('volPop').classList.remove('show');if(el.dataset.act!=='lightmenu'&&!el.closest('#lightPop'))$('lightPop').classList.remove('show');f(el);}
 });
 $('volRange').addEventListener('input',e=>{$('vol').value=e.target.value;if(+e.target.value>0&&$('mute').checked)$('mute').checked=false;applyVol();});
 
@@ -2599,7 +2612,7 @@ function updateHUD(dt){
   $('thrF').style.width=(dThr*100).toFixed(0)+'%';
   $('vig').style.opacity=(0.3+Math.min(kmh/180,1)*0.5).toFixed(2);
   $('lsLow').classList.toggle('on',lightsEff);$('lsAuto').classList.toggle('on',autoLights);$('lsHigh').classList.toggle('on',highBeam&&lightsEff);
-  $('lsBelt').classList.toggle('on',beltOn);$('lightBtn').classList.toggle('on',lightsEff);
+  $('lsBelt').classList.toggle('on',beltOn);$('beltDr').classList.toggle('on',beltOn);$('lpLow').classList.toggle('on',lightsEff);$('lpAuto').classList.toggle('on',autoLights);$('lpHigh').classList.toggle('on',highBeam&&lightsEff);$('lightBtn').classList.toggle('on',lightsEff);
   // battery / fuel
   $('batPct').textContent=Math.round(energy)+'%';$('batFill').setAttribute('width',(19.4*energy/100).toFixed(1));
   $('batFill').setAttribute('fill',energy<15?'#e82127':'currentColor');
