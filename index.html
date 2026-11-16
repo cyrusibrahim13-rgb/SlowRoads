@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SlowRoads: Endless Driving</title>
-<!-- v6.7: autopilot rewritten (lane-centre pure pursuit with speed-independent steering, smooth, braking ahead of bends); the autopilot icon on the screen turns with the steering wheel. v6.6: the top-screen 3D view draws the real trees, pines, rocks and cacti (true shapes, sizes and rotation) instead of grey posts. v6.5: menus (shortcuts, vehicle, tuning, settings) open on the left side of the view. v6.4: frunk opens in the game, unified taskbar icons, headlight menu, drive seatbelt, max-speed icon, cleaner drive playback bar, reverse view, park drag fix -->
+<!-- v6.8: "Turn back around" / "Get back on the road" warnings (Tesla beep, R to reset, auto-reset after 10 s); smoother autopilot braking that no longer crawls through bends; autopilot centred in the lane; the car follows the real mountain slope beside the road; three-lines icon on the bottom toolbar; time pill removed from the top screen. v6.7: autopilot rewritten (lane-centre pure pursuit with speed-independent steering, smooth, braking ahead of bends); the autopilot icon on the screen turns with the steering wheel. v6.6: the top-screen 3D view draws the real trees, pines, rocks and cacti (true shapes, sizes and rotation) instead of grey posts. v6.5: menus (shortcuts, vehicle, tuning, settings) open on the left side of the view. v6.4: frunk opens in the game, unified taskbar icons, headlight menu, drive seatbelt, max-speed icon, cleaner drive playback bar, reverse view, park drag fix -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2064%2064%27%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2731%27%20fill%3D%27%23fff%27%20stroke%3D%27%23e2e0db%27%20stroke-width%3D%271%27/%3E%0A%3Cg%20fill%3D%27none%27%20stroke%3D%27%2316191b%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2721%27%20stroke-width%3D%274.6%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2717.6%27%20stroke-width%3D%27.7%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.45%27/%3E%0A%3Cpath%20d%3D%27M11.4%2030.5%20Q20%2036.5%2027.4%2035.6%20M52.6%2030.5%20Q44%2036.5%2036.6%2035.6%27%20stroke-width%3D%273.4%27/%3E%0A%3Cpath%20d%3D%27M32%2036%20V52.5%27%20stroke-width%3D%273.6%27/%3E%0A%3Cpath%20d%3D%27M32%2011%20V15.5%27%20stroke-width%3D%272.2%27%20stroke%3D%27%2316191b%27/%3E%0A%3C/g%3E%0A%3Cpath%20d%3D%27M30%2011.2h4v4.6h-4z%27%20fill%3D%27%23d9423a%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%276.2%27%20fill%3D%27%2316191b%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%273.6%27%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%27.9%27%20stroke-opacity%3D%27.7%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%271.2%27%20fill%3D%27%23fff%27/%3E%0A%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -59,6 +59,14 @@ kbd{display:inline-flex;align-items:center;justify-content:center;min-width:26px
     border:1px solid rgba(255,255,255,.28);border-bottom-width:3px;border-radius:7px;box-shadow:0 1px 3px rgba(0,0,0,.25)}
 #toast{position:absolute;left:50%;top:70px;transform:translateX(-50%);padding:9px 20px;font-size:13px;letter-spacing:1px;opacity:0;transition:opacity .35s}
 #toast.show{opacity:1}
+#roadWarn{position:absolute;left:50%;top:14px;transform:translate(-50%,-14px);z-index:30;display:flex;flex-direction:column;align-items:center;gap:7px;
+  padding:11px 30px 12px;border-radius:14px;background:rgba(190,24,24,.92);color:#fff;border:1px solid rgba(255,255,255,.3);
+  box-shadow:0 6px 24px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+#roadWarn.show{opacity:1;transform:translate(-50%,0);pointer-events:auto;animation:rwPulse 1s ease-in-out infinite}
+#roadWarn b{font-size:19px;font-weight:700;letter-spacing:.04em;white-space:nowrap}
+#roadWarn kbd{min-width:32px;width:32px;height:32px;padding:0;font-size:15px;font-weight:700;border-radius:7px;cursor:pointer}
+@keyframes rwPulse{0%,100%{background:rgba(190,24,24,.92)}50%{background:rgba(120,12,12,.92)}}
+
 #panel{position:fixed;right:20px;top:68px;width:290px;max-height:calc(100vh - 90px);overflow:auto;padding:14px 16px 16px;
     font-size:12.5px;transition:opacity .25s,transform .25s;z-index:5}
 #panel.hidden{opacity:0;pointer-events:none;transform:translateY(-8px)}
@@ -401,7 +409,7 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
     <span id="chipCruise"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.64 17.25A8.5 8.5 0 1 1 19.36 17.25"/><path d="M12 13l4.6-4.6"/><circle cx="12" cy="13" r="1.1" fill="currentColor"/></svg><b id="cruiseNum">100</b><small>CRUISE</small></span>
     <span id="chipMax"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.64 17.25A8.5 8.5 0 1 1 19.36 17.25"/><path d="M12 13l5.2-2.6"/><path d="M19.6 7.2 17.4 9"/><circle cx="12" cy="13" r="1.1" fill="currentColor"/></svg><b id="maxNum">100</b><small>MAX</small></span></div></div>
   <div id="chips">
-    <span id="chipAuto" data-act="ap" title="Autopilot (F)">AUTO</span><span id="chipBoost" data-act="boost" title="Sport boost (Shift)">SPORT</span><span id="chipCam" data-act="cam" title="Camera view (C)">CHASE</span><span id="chipTime">15:30</span><span id="chipPwr">GAS</span><span id="regen" class="hidden" title="Power / regeneration"><i id="rgReg"></i><i id="rgPwr"></i><u></u><b id="rgThumb"></b></span>
+    <span id="chipAuto" data-act="ap" title="Autopilot (F)">AUTO</span><span id="chipBoost" data-act="boost" title="Sport boost (Shift)">SPORT</span><span id="chipCam" data-act="cam" title="Camera view (C)">CHASE</span><span id="chipPwr">GAS</span><span id="regen" class="hidden" title="Power / regeneration"><i id="rgReg"></i><i id="rgPwr"></i><u></u><b id="rgThumb"></b></span>
   </div>
   <svg class="gauge dr" id="gTach" viewBox="0 0 200 200"></svg>
   <svg class="gauge dr" id="gSpd" viewBox="0 0 200 200"></svg>
@@ -463,7 +471,7 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
       <div class="tb" id="cruiseBtn" title="Cruise control (Q)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.64 17.25A8.5 8.5 0 1 1 19.36 17.25"/><path d="M12 5.7V7M6.8 10l1.1.7M4.7 13H6"/><path d="M12 13l4.6-4.6M16.6 8.4h-3.3M16.6 8.4v3.3"/><circle cx="12" cy="13" r="1.1" fill="currentColor"/></svg></div>
       <div class="tb" id="engBtn" title="Tune car (T)"><div class="tile" style="background:#e8742c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9h9.5v8H7z"/><path d="M9.5 9V6.5h5V9"/><path d="M7 12H4.5M4.5 10v6"/><path d="M16.5 11H19l1.5 1.5V17"/><path d="M10 17v1.8M13.5 17v1.8"/></svg></div></div>
       <div class="tb" id="kbBtn" title="Keyboard shortcuts (K)"><div class="tile" style="background:#2c6bed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2.5"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg></div></div>
-      <div class="tb" id="tbMenu" data-act="menu" title="Settings (Esc)"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg></div>
+      <div class="tb" id="tbMenu" data-act="menu" title="Settings (Esc)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg></div>
     </div>
     <div class="grp">
       <div class="clim"><i data-act="clim" data-s="r" data-d="-1">‹</i><span id="climR">72</span><i data-act="clim" data-s="r" data-d="1">›</i></div>
@@ -539,6 +547,7 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
     <button class="btn" id="tuneReset">Reset to stock</button>
   </div>
   <div id="toast" class="glass"></div>
+  <div id="roadWarn"><b id="rwTxt">Turn back around</b><kbd id="rwKey" title="Reset car to road (R)">R</kbd></div>
 </div>
 
 <div id="panel" class="glass hidden">
@@ -750,6 +759,16 @@ function nearestIdx(x,z,hint){
   }
   return i;
 }
+/* v6.8: height of the terrain exactly as the rendered mesh draws it (same grid cell, same triangle split),
+   so the car sits on the visible mountain slope instead of the smooth analytic surface */
+function meshY(i,t,d){
+  if(Math.abs(d)>=OFFS[OFFS.length-1])return null;
+  let c=0;while(c<OFFS.length-2&&d>=OFFS[c+1])c++;
+  const d0=OFFS[c],d1=OFFS[c+1],u=(d-d0)/(d1-d0),p=pts[i],q=pts[i+1];
+  const vy=(pp,dv)=>terrY(Math.abs(dv),pp.y,pp.x-Math.cos(pp.h)*dv,pp.z+Math.sin(pp.h)*dv);
+  const ya=vy(p,d0),yb=vy(p,d1),yd=vy(q,d0),yc=vy(q,d1);
+  return u>=t?ya+(yb-ya)*u+(yc-yb)*t:ya+(yd-ya)*t+(yc-yd)*u;
+}
 function groundAt(x,z,hint){
   const i=nearestIdx(x,z,hint),p=pts[i],q=pts[i+1];
   const sx=q.x-p.x,sz=q.z-p.z,l2=sx*sx+sz*sz;
@@ -759,7 +778,7 @@ function groundAt(x,z,hint){
   let y;
   if(ad<3.6) y=cy;
   else if(ad<4.4) y=lerp(cy,cy-0.08,(ad-3.6)/0.8);
-  else y=terrY(ad,cy,x,z);
+  else{y=meshY(i,t,d);if(y===null)y=terrY(ad,cy,x,z);}
   return {y:y,d:d,i:i,t:t};
 }
 
@@ -1632,7 +1651,7 @@ const su=k=>Math.round(k*UF)+' '+UL;
 let toastT=0;
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1800);}
 function setAuto(on,silent){
-  if(on&&!auto)AP.st=car.steer;
+  if(on&&!auto){AP.st=car.steer;AP.dec=0;AP.thr=0;AP.braking=false;}
   auto=on;$('auto').checked=on;$('chipAuto').classList.toggle('on',on);$('maxBox').classList.toggle('dis',!on);
   if(!silent)toast(on?'Autopilot on':'Autopilot off');
 }
@@ -1850,7 +1869,31 @@ window.addEventListener('resize',()=>{
 /* =====================================================================
    Car physics
    ===================================================================== */
+/* v6.8: wrong-way / off-road warnings (Tesla beep, "R" resets, auto-reset after 10 s) */
+const RW={mode:0,t:0,beep:0,offT:0,wrongT:0};
+function setRoadWarn(m){
+  RW.mode=m;RW.t=0;RW.beep=0;
+  const el=document.getElementById('roadWarn');
+  if(m){document.getElementById('rwTxt').textContent=m===1?'Turn back around':'Get back on the road';}
+  el.classList.toggle('show',!!m);
+}
+document.getElementById('rwKey').addEventListener('click',()=>resetCar());
+function updateRoadWarn(dt,g){
+  const p=pts[g.i],q=pts[g.i+1],rel=wrapPi(car.h-lerp(p.h,q.h,g.t));
+  const offNow=Math.abs(g.d)>(RW.mode===2?3.9:4.3);
+  const wrongNow=Math.abs(rel)>(RW.mode===1?1.4:1.85)&&(Math.abs(car.vf)>1.5||RW.mode===1);
+  RW.offT=offNow?RW.offT+dt:0;RW.wrongT=wrongNow?RW.wrongT+dt:0;
+  let m=0;
+  if(RW.offT>0.6||(RW.mode===2&&offNow))m=2;
+  else if(RW.wrongT>0.5||(RW.mode===1&&wrongNow))m=1;
+  if(m!==RW.mode)setRoadWarn(m);
+  if(!m)return;
+  RW.t+=dt;RW.beep-=dt;
+  if(RW.beep<=0){playTeslaBeep();RW.beep=1.0;}
+  if(RW.t>=10){resetCar();return true;}
+}
 function resetCar(){
+  setRoadWarn(0);RW.offT=RW.wrongT=0;
   const i=nearestIdx(car.x,car.z,car.idx),p=pts[i],q=pts[i+1];
   car.x=p.x;car.z=p.z;car.h=Math.atan2(q.x-p.x,q.z-p.z);car.vx=car.vz=0;car.vf=0;car.steer=0;car.yawRate=0;car.idx=i;
   car.gear=0;car.shiftT=0;car.lean=0;
@@ -1860,8 +1903,8 @@ function resetCar(){
    - steering is computed as a path curvature and converted to a wheel angle with the car's real steering model, so the
      same gains work at 20 or 250 km/h (no weaving at speed, no lazy turn-in when slow)
    - the speed profile looks ~250 m ahead and brakes early enough to take every bend inside the grip limit */
-const LANE_C=1.2;
-const AP={st:0};
+const LANE_C=1.64;
+const AP={st:0,dec:0,thr:0,braking:false};
 function apLanePt(u){            // point on the lane centre line at fractional point index u
   const i=Math.floor(u),f=u-i,p=pts[i],q=pts[i+1],h=lerp(p.h,q.h,f);
   return {x:lerp(p.x,q.x,f)-Math.cos(h)*LANE_C,z:lerp(p.z,q.z,f)+Math.sin(h)*LANE_C};
@@ -1879,23 +1922,32 @@ function autopilot(dt){
   let cmd=-Math.atan(kappa*VC.wb)/ms;
   cmd=clamp(cmd,-1,1);
   AP.st+=(cmd-AP.st)*(1-Math.exp(-dt*12));                              // soften tiny jitters
-  // --- speed: never carry more speed into a bend than the grip allows; brake early
-  const aLat=0.72*VC.lat*(car.gripMul||1),aBrk=0.28*VC.brake*(tune.brake/100)*(1-0.3*wetFactor());
-  let vT=maxOn?maxKmh/3.6:250/3.6;
+  // --- speed (v6.8): look ahead, brake only as hard as the next bend really needs, ease in and out
+  const aBrkMax=VC.brake*(tune.brake/100)*(1-0.3*wetFactor()),aLat=1.3*VC.lat*(car.gripMul||1);
+  let cap=maxOn?maxKmh/3.6:250/3.6;
+  if(cruiseOn)cap=Math.min(cap,cruiseSet/3.6);
+  if(Math.abs(xte)>2.2)cap=Math.min(cap,Math.max(10,v));              // far from the lane: just don't accelerate
+  let need=0;                                                          // deceleration (m/s^2) needed to be at a safe speed at every point ahead
   for(let m=0;m<75;m++){
-    const k=pts[car.idx+m].k,kl=Math.abs(k/(1+LANE_C*k)),dd=Math.max(m*STEP-4,0);
-    const vk=Math.sqrt(aLat/(kl+1e-4)),vm=Math.sqrt(vk*vk+2*aBrk*dd);   // fast enough that braking at aBrk still makes it
-    if(vm<vT)vT=vm;
-    // crests: stay below the speed at which the road would fall away faster than gravity (the car would take off and drift)
-    if(m>0){const cv=(pts[car.idx+m+1].y-2*pts[car.idx+m].y+pts[car.idx+m-1].y)/(STEP*STEP);
-      if(cv<-0.0015){const vc=Math.sqrt(0.5*GRAV/-cv),vcm=Math.sqrt(vc*vc+2*aBrk*dd);if(vcm<vT)vT=vcm;}}
+    const k=pts[car.idx+m].k,kl=Math.abs(k/(1+LANE_C*k)),dist=Math.max(m*STEP-6,0)+6;
+    let vk=Math.sqrt(aLat/(kl+1e-4));
+    if(m>0){const cv=(pts[car.idx+m+1].y-2*pts[car.idx+m].y+pts[car.idx+m-1].y)/(STEP*STEP);   // crests: stay under take-off speed
+      if(cv<-0.0015)vk=Math.min(vk,Math.sqrt(0.5*GRAV/-cv));}
+    if(v>vk)need=Math.max(need,(v*v-vk*vk)/(2*dist));
   }
-  if(Math.abs(xte)>1.0)vT=Math.min(vT,Math.max(8,v*0.9));               // far from the lane: ease off while recovering
-  if(cruiseOn)vT=Math.min(vT,cruiseSet/3.6);
-  let thr=0,brk=0;
-  if(cruiseOn){const c=cruiseCtl(v,vT,dt);thr=c.thr;brk=c.brk;}
-  else{if(v<vT-0.4)thr=clamp((vT-v)*0.6,0,1);else if(v>vT+0.8)brk=clamp((v-vT)*0.22,0,0.9);}
-  if(cruiseOn&&v>vT+0.8)brk=Math.max(brk,clamp((v-vT)*0.22,0,0.9));
+  if(!AP.braking&&need>1.4)AP.braking=true;                            // hysteresis: no on/off chatter
+  else if(AP.braking&&need<0.3)AP.braking=false;
+  let dReq=AP.braking?Math.max(need*1.1,0.5):0;
+  dReq=Math.max(dReq,clamp((v-cap-0.8)*0.6,0,2.6));                    // above the max speed: ease off
+  dReq=Math.min(dReq,0.7*aBrkMax);
+  const dd=dReq-AP.dec;                                                // jerk-limited brake ramp
+  AP.dec+=dd>0?Math.min(dd,2.6*dt):Math.max(dd,-4*dt);
+  let thr=0,brk=AP.dec>0.05?clamp(AP.dec/aBrkMax,0,1):0;
+  if(cruiseOn){const c=cruiseCtl(v,cap,dt);thr=(AP.braking||AP.dec>0.3)?0:c.thr;}
+  else{
+    const tgt=(AP.braking||need>0.5||AP.dec>0.3||v>cap-0.4)?0:clamp((cap-v)*0.45,0,1);
+    AP.thr=tgt>AP.thr?Math.min(tgt,AP.thr+1.2*dt):tgt;thr=AP.thr;
+  }
   return {thr:thr,brk:brk,st:AP.st};
 }
 /* gas: gear from speed (with hysteresis) and a torque curve that favours low gears */
@@ -2080,6 +2132,7 @@ function updateCar(dt){
   const g=groundAt(car.x,car.z,car.idx);car.idx=g.i;
   checkCollisions(g,dt);
   if(Math.abs(g.d)>165){resetCar();toast('Back on the road');return;}
+  if(updateRoadWarn(dt,g))return;
   const fx2=Math.sin(car.h),fz2=Math.cos(car.h),rx2=-Math.cos(car.h),rz2=Math.sin(car.h);
   const yF=groundAt(car.x+fx2*VC.hl,car.z+fz2*VC.hl,car.idx).y,yR=groundAt(car.x-fx2*VC.hl,car.z-fz2*VC.hl,car.idx).y;
   const yRt=groundAt(car.x+rx2*VC.hw,car.z+rz2*VC.hw,car.idx).y,yLt=groundAt(car.x-rx2*VC.hw,car.z-rz2*VC.hw,car.idx).y;
@@ -2284,7 +2337,7 @@ function updateEnv(dt){
   {const rv=car.vf<-0.4;for(const t of car.rev){if(rv)t.material.color.setRGB(1,1,1);else t.material.color.setRGB(0.17,0.17,0.17);}}   // v3.2: reverse lights
   const hh=Math.floor(tod),mm=Math.floor((tod-hh)*60);
   const ts=(hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm;
-  $('clock').textContent=ts;$('chipTime').textContent=ts;
+  $('clock').textContent=ts;
 }
 function followCamera(dt){
   skyGroup.position.copy(camera.position);
@@ -2370,6 +2423,19 @@ function initAudio(){
     const g=AC.createGain();g.gain.value=0.012;o.connect(g);g.connect(master);o.start();
   });
   applyVol();
+}
+function playTeslaBeep(){
+  if(!AC||!master)return;
+  const t0=AC.currentTime+0.02;
+  for(let i=0;i<2;i++){
+    const t=t0+i*0.16,o=AC.createOscillator(),o2=AC.createOscillator(),g=AC.createGain();
+    o.type='sine';o.frequency.value=1245;o2.type='triangle';o2.frequency.value=2490;
+    const m2=AC.createGain();m2.gain.value=0.18;
+    g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(0.38,t+0.008);
+    g.gain.setValueAtTime(0.38,t+0.085);g.gain.exponentialRampToValueAtTime(0.001,t+0.12);
+    o.connect(g);o2.connect(m2);m2.connect(g);g.connect(master);
+    o.start(t);o2.start(t);o.stop(t+0.14);o2.stop(t+0.14);
+  }
 }
 const sfxLast={};
 function playSfx(kind,k){
