@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SlowRoads: Endless Driving</title>
-<!-- v6.6: the top-screen 3D view draws the real trees, pines, rocks and cacti (true shapes, sizes and rotation) instead of grey posts. v6.5: menus (shortcuts, vehicle, tuning, settings) open on the left side of the view. v6.4: frunk opens in the game, unified taskbar icons, headlight menu, drive seatbelt, max-speed icon, cleaner drive playback bar, reverse view, park drag fix -->
+<!-- v6.7: autopilot rewritten (lane-centre pure pursuit with speed-independent steering, smooth, braking ahead of bends); the autopilot icon on the screen turns with the steering wheel. v6.6: the top-screen 3D view draws the real trees, pines, rocks and cacti (true shapes, sizes and rotation) instead of grey posts. v6.5: menus (shortcuts, vehicle, tuning, settings) open on the left side of the view. v6.4: frunk opens in the game, unified taskbar icons, headlight menu, drive seatbelt, max-speed icon, cleaner drive playback bar, reverse view, park drag fix -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2064%2064%27%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2731%27%20fill%3D%27%23fff%27%20stroke%3D%27%23e2e0db%27%20stroke-width%3D%271%27/%3E%0A%3Cg%20fill%3D%27none%27%20stroke%3D%27%2316191b%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2721%27%20stroke-width%3D%274.6%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2717.6%27%20stroke-width%3D%27.7%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.45%27/%3E%0A%3Cpath%20d%3D%27M11.4%2030.5%20Q20%2036.5%2027.4%2035.6%20M52.6%2030.5%20Q44%2036.5%2036.6%2035.6%27%20stroke-width%3D%273.4%27/%3E%0A%3Cpath%20d%3D%27M32%2036%20V52.5%27%20stroke-width%3D%273.6%27/%3E%0A%3Cpath%20d%3D%27M32%2011%20V15.5%27%20stroke-width%3D%272.2%27%20stroke%3D%27%2316191b%27/%3E%0A%3C/g%3E%0A%3Cpath%20d%3D%27M30%2011.2h4v4.6h-4z%27%20fill%3D%27%23d9423a%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%276.2%27%20fill%3D%27%2316191b%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%273.6%27%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%27.9%27%20stroke-opacity%3D%27.7%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%271.2%27%20fill%3D%27%23fff%27/%3E%0A%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -167,7 +167,7 @@ kbd{border-color:rgba(95,242,255,.4);color:#e6fdff;box-shadow:0 0 6px rgba(95,24
 .prnd b.on{font-weight:700;color:var(--tx);opacity:1}
 #tesla.drive .prnd b.on{color:var(--acc)}
 .apI{width:22px;height:22px;color:var(--sub);opacity:.0;cursor:pointer;transition:color .25s,opacity .3s}
-.apI svg{width:22px;height:22px}
+.apI svg{width:22px;height:22px;transform-origin:50% 50%}
 .apI.on{color:var(--acc);opacity:1}.apI.tacc{color:var(--sub);opacity:1}
 #gearBox{display:flex;align-items:center;gap:5px;margin-left:2px}
 #gearL{font-style:normal;font-size:8.5px;letter-spacing:.14em;color:var(--sub);font-weight:600}
@@ -1632,6 +1632,7 @@ const su=k=>Math.round(k*UF)+' '+UL;
 let toastT=0;
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1800);}
 function setAuto(on,silent){
+  if(on&&!auto)AP.st=car.steer;
   auto=on;$('auto').checked=on;$('chipAuto').classList.toggle('on',on);$('maxBox').classList.toggle('dis',!on);
   if(!silent)toast(on?'Autopilot on':'Autopilot off');
 }
@@ -1855,20 +1856,47 @@ function resetCar(){
   car.gear=0;car.shiftT=0;car.lean=0;
   car.y=groundAt(car.x,car.z,car.idx).y;car.air=false;car.vy=0;car.pys=undefined;
 }
+/* v6.7 autopilot: pure pursuit on the right-lane centre line.
+   - steering is computed as a path curvature and converted to a wheel angle with the car's real steering model, so the
+     same gains work at 20 or 250 km/h (no weaving at speed, no lazy turn-in when slow)
+   - the speed profile looks ~250 m ahead and brakes early enough to take every bend inside the grip limit */
+const LANE_C=1.2;
+const AP={st:0};
+function apLanePt(u){            // point on the lane centre line at fractional point index u
+  const i=Math.floor(u),f=u-i,p=pts[i],q=pts[i+1],h=lerp(p.h,q.h,f);
+  return {x:lerp(p.x,q.x,f)-Math.cos(h)*LANE_C,z:lerp(p.z,q.z,f)+Math.sin(h)*LANE_C};
+}
 function autopilot(dt){
-  const v=Math.max(car.vf,0),look=6+v*0.7,j=car.idx+Math.max(2,Math.round(look/STEP));
-  ensurePoints(j+60);
-  const T=pts[j],tx=T.x+(-Math.cos(T.h))*1.2,tz=T.z+Math.sin(T.h)*1.2;
-  const gg=groundAt(car.x,car.z,car.idx),xte=gg.d-1.2;   // v3.2: cross-track correction keeps it in lane through curves
-  const err=wrapPi(Math.atan2(tx-car.x,tz-car.z)-car.h)+clamp(0.06*xte,-0.3,0.3);
-  const u=(2.4*err-0.6*car.yawRate)*(VC.wb/2.6);
-  let maxK=0;for(let m=0;m<45;m++){const k=Math.abs(pts[car.idx+m].k);if(k>maxK)maxK=k;}
-  let vT=Math.min(maxOn?maxKmh/3.6:250/3.6,Math.sqrt(0.82*VC.lat*(car.gripMul||1)/(maxK+1e-4)));
+  const v=Math.max(car.vf,0);
+  ensurePoints(car.idx+80);
+  const gg=groundAt(car.x,car.z,car.idx),xte=gg.d-LANE_C;
+  // --- steering: pure pursuit towards the lane centre, a little ahead
+  const Ld=clamp(4.5+0.55*v,5.5,32),T=apLanePt(gg.i+gg.t+Ld/STEP);
+  const dx=T.x-car.x,dz=T.z-car.z,dist=Math.max(Math.hypot(dx,dz),1);
+  const alpha=clamp(wrapPi(Math.atan2(dx,dz)-car.h),-1.3,1.3);
+  const kappa=2*Math.sin(alpha)/dist;                                  // curvature (+ = heading increases)
+  const ms=VC.steerMax*(tune.steer/100)/(1+car.vf*car.vf*VC.sd);        // same formula the car uses
+  let cmd=-Math.atan(kappa*VC.wb)/ms;
+  cmd=clamp(cmd,-1,1);
+  AP.st+=(cmd-AP.st)*(1-Math.exp(-dt*12));                              // soften tiny jitters
+  // --- speed: never carry more speed into a bend than the grip allows; brake early
+  const aLat=0.72*VC.lat*(car.gripMul||1),aBrk=0.28*VC.brake*(tune.brake/100)*(1-0.3*wetFactor());
+  let vT=maxOn?maxKmh/3.6:250/3.6;
+  for(let m=0;m<75;m++){
+    const k=pts[car.idx+m].k,kl=Math.abs(k/(1+LANE_C*k)),dd=Math.max(m*STEP-4,0);
+    const vk=Math.sqrt(aLat/(kl+1e-4)),vm=Math.sqrt(vk*vk+2*aBrk*dd);   // fast enough that braking at aBrk still makes it
+    if(vm<vT)vT=vm;
+    // crests: stay below the speed at which the road would fall away faster than gravity (the car would take off and drift)
+    if(m>0){const cv=(pts[car.idx+m+1].y-2*pts[car.idx+m].y+pts[car.idx+m-1].y)/(STEP*STEP);
+      if(cv<-0.0015){const vc=Math.sqrt(0.5*GRAV/-cv),vcm=Math.sqrt(vc*vc+2*aBrk*dd);if(vcm<vT)vT=vcm;}}
+  }
+  if(Math.abs(xte)>1.0)vT=Math.min(vT,Math.max(8,v*0.9));               // far from the lane: ease off while recovering
   if(cruiseOn)vT=Math.min(vT,cruiseSet/3.6);
   let thr=0,brk=0;
   if(cruiseOn){const c=cruiseCtl(v,vT,dt);thr=c.thr;brk=c.brk;}
-  else{if(v<vT-0.4)thr=clamp((vT-v)*0.6,0,1);else if(v>vT+1.5)brk=clamp((v-vT)*0.15,0,0.7);}
-  return {thr:thr,brk:brk,st:clamp(-u,-1,1)};
+  else{if(v<vT-0.4)thr=clamp((vT-v)*0.6,0,1);else if(v>vT+0.8)brk=clamp((v-vT)*0.22,0,0.9);}
+  if(cruiseOn&&v>vT+0.8)brk=Math.max(brk,clamp((v-vT)*0.22,0,0.9));
+  return {thr:thr,brk:brk,st:AP.st};
 }
 /* gas: gear from speed (with hysteresis) and a torque curve that favours low gears */
 function gearForSpeed(v){const gm=PW.gears;let g=0;while(g<gm.length-1&&v>gm[g])g++;return g;}
@@ -2574,6 +2602,7 @@ function setMode(m){
   VZ.tgt=m==='park'?1:0;
   if(m==='drive'){VZ.idle=99;MP.idle=99;VZ.fT=VZ.tT=0;lidLabels();}   // pulling away shuts the frunk / trunk   // leaving park: any dragged view eases back to normal right away
 }
+let apRot='';const apIcons=[$('tsApI').firstElementChild,$('navAp').firstElementChild];
 function updateHUD(dt){
   if(dashDirty){buildTach();dashDirty=false;dRpm=PW.isEV?0:0.11;hudForce=true;}
   const v=Math.abs(car.vf),kmh=v*3.6;
@@ -2607,6 +2636,10 @@ function updateHUD(dt){
       const put=(id,p,dx,dy)=>{const el=$(id);el.style.left=(p[0]+dx).toFixed(1)+'px';el.style.top=(p[1]+dy).toFixed(1)+'px';};
       put('lblFrunk',f,0,0);put('lblTrunk',t,0,0);put('lblLock',r,0,-8);put('bolt',c,6,-10);
     }
+  }
+  {  // v6.7: the autopilot icon turns exactly like the steering wheel
+    const MWi=car.models&&car.models[shownVeh],deg=auto?car.steer*((MWi&&MWi.lock)||2.1)*57.2958:0,txt=Math.abs(deg)<0.05?'':'rotate('+deg.toFixed(1)+'deg)';
+    if(txt!==apRot){apRot=txt;for(const el of apIcons)el.style.transform=txt;}
   }
   hudT+=dt;if(hudT<0.05&&!hudForce)return;hudT=0;hudForce=false;
   // ---- text / state at 20 Hz ----
