@@ -1645,7 +1645,7 @@ const VZ={ok:false,pk:1,tgt:1,rvA:0,yaw:0,pitch:0,idle:0,drag:false,of:0,ot:0,fT
        dPos.set(r0*Math.cos(e1)*Math.sin(a1),r0*Math.sin(e1),r0*Math.cos(e1)*Math.cos(a1));   // orbit the drive camera around the car
        dTgt.lerp(carPt,clamp(Math.hypot(VZ.yaw,VZ.pitch)*3+VZ.rvA*1.5,0,1));}                            // ...and look at the car once orbited
       {  // v6.9: sensors active -> swing up to a bird's-eye view of the car, and back down a moment after everything is clear
-        const want=VZ.tgt===0&&PX.list.length>0;VZ.topHold=want?1.4:Math.max(0,(VZ.topHold||0)-dt);
+        const want=VZ.tgt===0&&PX.list.length>0;VZ.pxT=want?(VZ.pxT||0)+dt:0;VZ.topHold=VZ.pxT>=1?1.4:Math.max(0,(VZ.topHold||0)-dt);   // only swing up after the sensors have been active for at least 1 s
         VZ.topK=(VZ.topK||0)+clamp((VZ.topHold>0?1:0)-(VZ.topK||0),-dt/0.55,dt/0.55);
         topE=VZ.topK*VZ.topK*(3-2*VZ.topK);
         if(topE>0){tPos.set(0,10.5*lenK+1,-0.9);tTgt.set(0,0,0.5);dPos.lerp(tPos,topE);dTgt.lerp(tTgt,topE);}
