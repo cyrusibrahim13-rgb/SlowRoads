@@ -1470,8 +1470,8 @@ const VZ={ok:false,pk:1,tgt:1,rvA:0,yaw:0,pitch:0,idle:0,drag:false,of:0,ot:0,fT
     const gTex=new THREE.CanvasTexture(gcv),PXV=[];
     for(let i=0;i<5;i++){
       const grp=new THREE.Group();grp.visible=false;sc.add(grp);const arcs=[];
-      for(let k=0;k<3;k++){const m=new THREE.Mesh(arcGeo,new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,depthWrite:false,side:THREE.DoubleSide}));m.rotation.x=-Math.PI/2;m.position.y=0.13;m.renderOrder=8;grp.add(m);arcs.push(m);}
-      const gl=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:gTex,transparent:true,depthWrite:false}));gl.rotation.x=-Math.PI/2;gl.position.y=0.15;gl.renderOrder=9;gl.visible=false;sc.add(gl);
+      for(let k=0;k<3;k++){const m=new THREE.Mesh(arcGeo,new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,depthWrite:false,depthTest:false,side:THREE.DoubleSide}));m.rotation.x=-Math.PI/2;m.position.y=0.13;m.renderOrder=8;grp.add(m);arcs.push(m);}
+      const gl=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:gTex,transparent:true,depthWrite:false,depthTest:false}));gl.rotation.x=-Math.PI/2;gl.position.y=0.15;gl.renderOrder=9;gl.visible=false;sc.add(gl);
       PXV.push({g:grp,arcs:arcs,gl:gl});
     }
     const pxCol=new THREE.Color();
