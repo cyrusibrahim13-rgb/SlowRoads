@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SlowRoads: Endless Driving</title>
-<!-- v7.4: FSD turn-around now plans the fewest-move manoeuvre (apPlan): full lock, every leg uses all the free space, direction + lock searched per leg.
+<!-- v7.6: new CHILL gear (proximity sensors fully on, top view, 20 mph cap, no FSD); P/R/N/D can be shifted by hand (menu option, key G for CHILL); handbrake drifting with tyre screech, skid marks and tyre smoke.
+     v7.5: road surface reworked (less perfect, balanced with the terrain, moire removed by fading each noise octave out before it can alias); FSD holds the user's set speed (hard cap 100 mph); FSD lane lines no longer flicker; heavier fog in rain / storms; slightly slicker wet road; gas engine now sits inside a real engine bay under the bonnet.
+     v7.4: FSD turn-around now plans the fewest-move manoeuvre (apPlan): full lock, every leg uses all the free space, direction + lock searched per leg.
      v7.1 (update): landing/downforce physics, flush obstacle collisions, louder FSD chime, FSD (renamed from autopilot) with reverse + emergency braking, 1 s proximity top-view delay, gas engine under the frunk.
      v7.1: car realism pass (materials only, design unchanged): per-pixel rounded-panel reflections, deeper clear-coat paint with flake, dark mirror glass, real wheel faces (spokes, rim lip, brake disc + caliper) with tread, lamp lens detail, contact shadow, and a richer reflection environment (sun, clouds, tree-line). v7.0: major graphics update (bloom, wet reflective asphalt, PBR car, realistic roadside, soft clouds). v6.9 (cont. 3): autopilot engage / disengage now play the real Tesla recordings (embedded), trimmed and loudness-matched to the same level (-16 LUFS). v6.9 (cont. 2): sensors cover every side and switch the top view to a bird's-eye view; signal lamps built into the head / tail light clusters; clicking a signal always selects it (click again = off); hazard button in the park light stack; autopilot chimes = the same two tones, rising to engage and reversed to disengage. v6.9 (cont.): red flashing screen border on road warnings; off-road warning only after two car-widths off the road; seatbelt button back in its drive spot, hazard lights button in the toolbar; turn signals / hazards show on the top-screen 3D car; Tesla-style proximity sensor arcs + STOP + beep; reworked autopilot chimes. v6.9: Tesla-style autopilot engage / disengage chimes; turn signals (park: two icons under the high beams, drive: 2x3 toolbar beside the ETA card with signals, seatbelt, headlights, auto, high beams; amber flashing lamps on the car, green flashing arrows, tick-tock sound, auto-cancel after the turn; keys , and .); headlight menu removed from the bottom apps. v6.8: "Turn back around" / "Get back on the road" warnings (Tesla beep, R to reset, auto-reset after 10 s); smoother autopilot braking that no longer crawls through bends; autopilot centred in the lane; the car follows the real mountain slope beside the road; three-lines icon on the bottom toolbar; time pill removed from the top screen. v6.7: autopilot rewritten (lane-centre pure pursuit with speed-independent steering, smooth, braking ahead of bends); the autopilot icon on the screen turns with the steering wheel. v6.6: the top-screen 3D view draws the real trees, pines, rocks and cacti (true shapes, sizes and rotation) instead of grey posts. v6.5: menus (shortcuts, vehicle, tuning, settings) open on the left side of the view. v6.4: frunk opens in the game, unified taskbar icons, headlight menu, drive seatbelt, max-speed icon, cleaner drive playback bar, reverse view, park drag fix -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2064%2064%27%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2731%27%20fill%3D%27%23fff%27%20stroke%3D%27%23e2e0db%27%20stroke-width%3D%271%27/%3E%0A%3Cg%20fill%3D%27none%27%20stroke%3D%27%2316191b%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2721%27%20stroke-width%3D%274.6%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2717.6%27%20stroke-width%3D%27.7%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.45%27/%3E%0A%3Cpath%20d%3D%27M11.4%2030.5%20Q20%2036.5%2027.4%2035.6%20M52.6%2030.5%20Q44%2036.5%2036.6%2035.6%27%20stroke-width%3D%273.4%27/%3E%0A%3Cpath%20d%3D%27M32%2036%20V52.5%27%20stroke-width%3D%273.6%27/%3E%0A%3Cpath%20d%3D%27M32%2011%20V15.5%27%20stroke-width%3D%272.2%27%20stroke%3D%27%2316191b%27/%3E%0A%3C/g%3E%0A%3Cpath%20d%3D%27M30%2011.2h4v4.6h-4z%27%20fill%3D%27%23d9423a%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%276.2%27%20fill%3D%27%2316191b%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%273.6%27%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%27.9%27%20stroke-opacity%3D%27.7%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%271.2%27%20fill%3D%27%23fff%27/%3E%0A%3C/svg%3E">
@@ -384,6 +386,12 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
 #tsMap{top:0;opacity:1;transform:none;pointer-events:auto;box-shadow:none}
 #cardMedia{top:296px}
 
+#gearL{display:none!important}
+.prnd b[data-g]{cursor:pointer}
+#gC{font-size:10px;letter-spacing:.06em;margin-left:2px}
+#tesla .prnd #gC.on{color:#27b26a}
+#tsBat{left:236px!important}
+#tsClock{left:306px!important}
 </style>
 </head>
 <body>
@@ -424,7 +432,7 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
 
   <!-- status bar -->
   <div id="tsTop">
-    <div id="tsGear"><span class="prnd"><b id="gP">P</b><b id="gR">R</b><b id="gN">N</b><b id="gD">D</b></span>
+    <div id="tsGear"><span class="prnd"><b id="gP" data-act="gear" data-g="P">P</b><b id="gR" data-act="gear" data-g="R">R</b><b id="gN" data-act="gear" data-g="N">N</b><b id="gD" data-act="gear" data-g="D">D</b><b id="gC" data-act="gear" data-g="C" title="CHILL gear (G): tight spaces, proximity sensors on, max 20 mph">CHILL</b></span>
       <span id="tsApI" class="apI" data-act="ap" title="FSD (F)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.2"/><path d="M3 11.2c3.4.9 5.8 1.9 7 3.1M21 11.2c-3.4.9-5.8 1.9-7 3.1M12 14.6V21"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/></svg></span>
       <span id="gearBox"><em id="gearL">GEAR</em><i id="gearV">N</i></span></div>
     <div id="tsBat"><span id="batPct">90%</span><svg id="batIco" viewBox="0 0 28 14"><rect x=".6" y=".6" width="23" height="12.8" rx="2.4" fill="none" stroke="currentColor"/><rect x="25" y="4" width="2.4" height="6" rx="1" fill="currentColor"/><rect id="batFill" x="2.4" y="2.4" width="19.4" height="9.2" rx="1.2" fill="currentColor"/></svg></div>
@@ -519,7 +527,8 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
     <div class="kbRow"><span>Accelerate</span><div class="keys"><kbd>W</kbd><i>or</i><kbd>↑</kbd></div></div>
     <div class="kbRow"><span>Brake / reverse</span><div class="keys"><kbd>S</kbd><i>or</i><kbd>↓</kbd></div></div>
     <div class="kbRow"><span>Steer</span><div class="keys"><kbd>A</kbd><kbd>D</kbd><i>or</i><kbd>←</kbd><kbd>→</kbd></div></div>
-    <div class="kbRow"><span>Handbrake</span><div class="keys"><kbd>Space</kbd></div></div>
+    <div class="kbRow"><span>Handbrake / drift</span><div class="keys"><kbd>Space</kbd></div></div>
+    <div class="kbRow"><span>CHILL gear</span><div class="keys"><kbd>G</kbd></div></div>
     <h4>Assist &amp; view</h4>
     <div class="kbRow"><span>FSD (Full Self-Driving)</span><div class="keys"><kbd>F</kbd></div></div>
     <div class="kbRow"><span>Cruise control</span><div class="keys"><kbd>Q</kbd></div></div>
@@ -623,6 +632,8 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
   <label class="chk"><input type="checkbox" id="hdChk"> Headlights (L)</label>
   <label class="chk"><input type="checkbox" id="boostChk"> Sport boost (Shift)</label>
   <label class="chk"><input type="checkbox" id="cruiseOn"> Cruise control (manual + FSD)</label>
+  <label class="chk"><input type="checkbox" id="manualChk"> Manual gears (shift P R N D yourself)</label>
+  <label class="chk"><input type="checkbox" id="chillChk"> CHILL gear (G)</label>
   <div class="lbl"><span>Cruise set speed</span><span id="cruiseVal">100 km/h</span></div>
   <input type="range" id="cruise" min="20" max="200" step="5" value="100">
   <div id="maxBox" class="dis">
@@ -841,7 +852,7 @@ const GL_NOISE=
 'float sr_fbm(vec2 p){float a=0.5,s=0.0;for(int i=0;i<4;i++){s+=a*sr_vn(p);p=p*2.03+vec2(17.1,9.2);a*=0.5;}return s;}\n'+
 'float sr_g(float x,float s){float t=x/s;return exp(-t*t);}\n';
 const GL_ROAD_FN=
-'float sr_bh(vec2 p){return sr_vn(p*55.0)*0.5+sr_vn(p*130.0)*0.3+sr_vn(p*310.0)*0.2;}\n'+
+'float sr_bh(vec2 p){return sr_vn(p*26.0)*0.55+sr_vn(p*62.0)*0.3+sr_vn(p*140.0)*0.15;}\n'+
 'vec2 sr_ripples(vec2 p){vec2 sum=vec2(0.0);\n'+
 ' for(int k=0;k<2;k++){float fk=float(k);vec2 q=p*(2.6+fk*1.7)+fk*13.7;vec2 g=floor(q);vec2 f=fract(q)-0.5;\n'+
 '  float r=sr_h21(g+fk*5.0);vec2 c=(vec2(sr_h21(g+1.7),sr_h21(g+8.3))-0.5)*0.4;\n'+
@@ -862,18 +873,23 @@ const GL_DECOR=
 ' diffuseColor.rgb*=1.0+(lf-0.5)*0.55*fk-0.04;diffuseColor.rgb*=1.0-0.12*clamp(uWet,0.0,1.0);}\n';
 const GL_ROAD_COL=
 'float rdBasin=0.0,rdPol=0.0,rdWM=0.0,rdFK=0.0;vec2 rdGr=vec2(0.0);\n'+
-'vec2 rp=vWP.xz;float rdd=length(vViewPosition);rdFK=1.0-smoothstep(18.0,70.0,rdd);\n'+
+'vec2 rp=vWP.xz;float rdd=length(vViewPosition);rdFK=1.0-smoothstep(3.0,22.0,rdd);\n'+
+'float fn1=1.0-smoothstep(1.2,4.5,rdd),fn2=1.0-smoothstep(3.5,16.0,rdd),fn3=1.0-smoothstep(12.0,55.0,rdd);\n'+   // v7.5: every octave fades out before its footprint reaches a pixel -> no moire
 'float al=abs(vLat);\n'+
-'float trk=sr_g(al-1.05,0.28)+sr_g(al-2.55,0.28);float cen=sr_g(al-1.8,0.22);\n'+
-'float large=sr_fbm(rp*0.18);float mid=sr_fbm(rp*1.6);\n'+
-'float grain=sr_h21(floor(rp*260.0));float grain2=sr_vn(rp*70.0);\n'+
-'float crk=1.0-smoothstep(0.0,0.012,abs(sr_fbm(rp*0.55+3.7)-0.5));\n'+
-'float pat=step(0.72,sr_vn(floor(rp*vec2(0.45,0.22))+4.0));\n'+
-'float shd=(0.86+0.28*large)*(0.92+0.16*mid);\n'+
-'shd*=1.0-0.14*trk-0.08*cen;shd*=1.0+smoothstep(3.0,3.6,al)*0.2*(0.5+mid);\n'+
-'shd*=1.0-0.16*pat;shd*=1.0-0.35*crk*smoothstep(0.35,0.7,large);\n'+
-'shd*=1.0+(grain-0.5)*0.5*rdFK+(grain2-0.5)*0.16;\n'+
-'shd*=1.0+step(0.992,sr_h21(floor(rp*210.0)+9.0))*0.5*rdFK;\n'+
+'float trk=sr_g(al-1.05,0.30)+sr_g(al-2.55,0.30);float cen=sr_g(al-1.8,0.22);\n'+
+'float large=sr_fbm(rp*0.18);float mid=mix(0.5,sr_fbm(rp*1.1),fn3);\n'+
+'float grain=sr_h21(floor(rp*80.0));float grain2=mix(0.5,sr_vn(rp*24.0),fn2);\n'+
+'float cw=0.010+rdd*0.0007;float crk=1.0-smoothstep(0.0,cw,abs(sr_fbm(rp*0.55+3.7)-0.5));\n'+
+'float crk2=(1.0-smoothstep(0.0,cw*0.8,abs(sr_fbm(rp*0.95+11.3)-0.5)))*fn3;\n'+
+'vec2 pc=floor(rp*vec2(0.45,0.22))+4.0;float pat=step(0.72,sr_vn(pc));float patT=sr_h21(pc+2.0);\n'+
+'float stain=smoothstep(0.60,0.82,sr_fbm(rp*0.8+vec2(3.0,7.0)))*(0.35+0.65*clamp(trk+cen,0.0,1.0));\n'+
+'float shd=(0.80+0.36*large)*(0.94+0.12*mid);\n'+
+'shd*=1.0-0.12*trk-0.07*cen;shd*=1.0+smoothstep(3.0,3.6,al)*0.18*(0.5+mid);\n'+
+'shd*=1.0+pat*(patT-0.55)*0.30;\n'+                                       // repair patches: some darker, some lighter
+'shd*=1.0-0.30*crk*smoothstep(0.30,0.65,large)-0.20*crk2;\n'+
+'shd*=1.0-0.14*stain;\n'+
+'shd*=1.0+(grain-0.5)*0.16*fn1+(grain2-0.5)*0.14;\n'+
+'shd*=1.0+step(0.992,sr_h21(floor(rp*55.0)+9.0))*0.18*fn2;\n'+
 'diffuseColor.rgb*=shd;\n'+
 'rdPol=clamp(trk*0.8+cen*0.4,0.0,1.0);\n'+
 'float pn=sr_fbm(rp*0.45+vec2(5.2,1.3));float exs=clamp((uWet-1.0)/0.25,0.0,1.0);\n'+
@@ -882,15 +898,16 @@ const GL_ROAD_COL=
 'diffuseColor.rgb*=1.0-0.30*rdWM;\n';
 const GL_LINE_COL=
 'float rdBasin=0.0,rdPol=0.0,rdWM=0.0,rdFK=0.0;vec2 rdGr=vec2(0.0);\n'+
-'vec2 rp=vWP.xz;float rdd=length(vViewPosition);rdFK=1.0-smoothstep(18.0,70.0,rdd);\n'+
-'float lsh=(0.78+0.3*sr_vn(rp*3.0))*(0.9+0.2*sr_h21(floor(rp*140.0)));\n'+
-'lsh*=1.0-0.25*step(0.7,sr_vn(rp*9.0+2.0));diffuseColor.rgb*=lsh;\n'+
+'vec2 rp=vWP.xz;float rdd=length(vViewPosition);rdFK=1.0-smoothstep(3.0,22.0,rdd);\n'+
+'float lf1=1.0-smoothstep(1.5,6.0,rdd),lf2=1.0-smoothstep(10.0,45.0,rdd);\n'+
+'float lsh=(0.82+0.22*sr_vn(rp*2.2))*(0.96+0.08*sr_h21(floor(rp*50.0))*lf1);\n'+
+'lsh*=1.0-0.22*step(0.7,sr_vn(rp*6.0+2.0))*lf2;diffuseColor.rgb*=lsh;\n'+
 'float wk=clamp(uWet,0.0,1.0);rdWM=wk*0.6;\n';
 const GL_ROAD_ROUGH='roughnessFactor=mix(0.92-0.25*rdPol,mix(0.42,0.04,rdBasin),smoothstep(0.0,0.55,uWet));\n';
 const GL_LINE_ROUGH='roughnessFactor=mix(0.75,0.3,clamp(uWet,0.0,1.0));\n';
 const GL_ROAD_BUMP=
-'{vec2 ee=vec2(0.0035,0.0);float hc=sr_bh(rp);\n'+
-' vec2 gr=vec2(sr_bh(rp+ee.xy)-hc,sr_bh(rp+ee.yx)-hc)*(0.006/0.0035)*rdFK*(1.0-0.92*rdBasin*smoothstep(0.1,0.5,uWet));\n'+
+'{vec2 ee=vec2(0.006,0.0);float hc=sr_bh(rp);\n'+
+' vec2 gr=vec2(sr_bh(rp+ee.xy)-hc,sr_bh(rp+ee.yx)-hc)*0.9*rdFK*(1.0-0.92*rdBasin*smoothstep(0.1,0.5,uWet));\n'+
 ' if(uRain>0.05)gr+=sr_ripples(rp)*uRain*0.4*rdBasin*smoothstep(0.1,0.4,uWet);\n'+
 ' rdGr=gr;normal=normalize(normal+mat3(viewMatrix)*vec3(-gr.x,0.0,-gr.y));}\n';
 function GL_REFLECT(linek){return ''+
@@ -1463,7 +1480,7 @@ function tunedPW(){
   return o;
 }
 
-const car={x:0,y:0,z:0,h:0,vx:0,vz:0,vf:0,steer:0,yawRate:0,idx:150,pitch:0,roll:0,accel:0,thr:0,off:false,
+const car={x:0,y:0,z:0,h:0,vx:0,vz:0,vf:0,drift:0,slip:0,skid:0,steer:0,yawRate:0,idx:150,pitch:0,roll:0,accel:0,thr:0,off:false,
   gear:0,shiftT:0,lean:0,regen:false,pwrF:0,regenF:0,
   group:new THREE.Group(),wheelsSpin:[],frontPivots:[],cabin:null,tail:[],rev:[],heads:[],spots:[],sigL:[],sigR:[],models:{}};
 
@@ -1670,33 +1687,37 @@ function mpipe(parent,r,len,mat,x,y,z,rx){
 
 function buildCarModel(){
   const M=newModel([1,1]),g=M.group;
-  mboxR(g,1.8,0.5,4.1,SH.body,0,0.62,0,0.17);
+  // v7.5: the body is no longer one solid block - the front section is an open engine / frunk bay (floor, two fenders, firewall, nose panel)
+  mboxR(g,1.8,0.5,2.8,SH.body,0,0.62,-0.65,0.17);                      // cabin + rear body, up to the firewall at z = 0.75
+  mboxR(g,0.2,0.5,1.3,SH.body,-0.8,0.62,1.4,0.12);mboxR(g,0.2,0.5,1.3,SH.body,0.8,0.62,1.4,0.12);   // front fenders (bay walls)
+  mboxR(g,1.8,0.5,0.12,SH.body,0,0.62,1.99,0.1);                       // nose panel
+  mbox(g,1.4,0.1,1.2,SH.dark,0,0.42,1.4);                              // bay floor (top at y = 0.47)
   mboxR(g,1.84,0.2,4.14,SH.dark,0,0.4,0,0.08);
   mboxR(M.cabin,1.5,0.5,1.9,SH.glass,0,1.12,-0.2,0.16);
   mboxR(M.cabin,1.56,0.06,1.96,SH.roof,0,1.4,-0.2,0.03);
   g.add(M.cabin);
   mboxR(g,1.84,0.2,0.3,SH.dark,0,0.52,2.0,0.08);mboxR(g,1.84,0.2,0.3,SH.dark,0,0.52,-2.0,0.08);
   // frunk (bonnet) + trunk lid, each with a dark cavity underneath that shows when it is open
-  mbox(g,1.5,0.012,1.05,SH.cav,0,0.873,1.42);mbox(g,1.5,0.012,0.7,SH.cav,0,0.873,-1.6);
+  mbox(g,1.5,0.012,0.7,SH.cav,0,0.873,-1.6);
   mboxR(mhinge(M,'frunk',g,0,0.87,0.75,-1.0),1.8,0.05,1.3,SH.body,0,0.025,0.65,0.17);
   mboxR(mhinge(M,'trunk',g,0,0.87,-1.15,1.0),1.8,0.05,0.9,SH.body,0,0.025,-0.45,0.17);
   [[-0.95,1.3,true],[0.95,1.3,true],[-0.95,-1.3,false],[0.95,-1.3,false]].forEach(w=>mwheel(M,g,w[0],w[1],0.36,0.28,w[2]));
   mlights(M,[-0.62,0.62],0.7,2.07,[0.4,0.14],0.7,-2.07,[0.4,0.12]);
   // gas: twin exhaust tips   |   electric: a glowing ring that runs down both sides and across the nose and tail
   [-0.5,0.5].forEach(x=>M.gasParts.push(mpipe(g,0.055,0.26,SH.chrome,x,0.3,-2.1,true)));
-  { // v7.1 gas engine bay: only visible while the frunk is open (it sits under the bonnet)
-    const E=new THREE.Group();g.add(E);M.eng=E;E.visible=false;M.gasParts.push(E);
-    mbox(E,0.74,0.26,0.62,SH.dark,0,0.99,1.32);                       // block
-    mbox(E,0.7,0.07,0.58,SH.roof,0,1.15,1.32);                        // head cover
-    [-0.26,-0.09,0.09,0.26].forEach(x=>mbox(E,0.06,0.05,0.5,SH.chrome,x,1.2,1.32));   // coil / plug caps
-    mbox(E,0.3,0.14,0.5,SH.chrome,0.0,1.06,1.78);                     // intake / airbox
-    mbox(E,0.9,0.5,0.06,SH.dark,0,0.98,1.9);                          // radiator
-    mbox(E,0.3,0.2,0.2,SH.roof,-0.6,0.98,1.2);                        // battery
-    mbox(E,0.16,0.16,0.16,SH.chrome,0.58,1.0,1.1);                    // coolant reservoir
-    mbox(E,0.76,0.05,0.05,SH.roof,0,0.96,1.0);                        // belt drive
-    mpipe(E,0.09,0.06,SH.chrome,0.3,1.0,1.04,true);mpipe(E,0.07,0.06,SH.chrome,-0.2,1.0,1.04,true);   // pulleys
-    mpipe(E,0.045,0.7,SH.chrome,0.42,0.95,1.35,true);mpipe(E,0.045,0.7,SH.chrome,-0.42,0.95,1.35,true); // hoses / manifold runners
-    mbox(E,0.04,0.2,0.04,SH.chrome,0.28,1.25,1.1);                    // oil cap
+  { // v7.5 gas engine: lives in the bay under the bonnet at all times (hidden by the closed lid, exposed when the frunk opens)
+    const E=new THREE.Group();g.add(E);M.eng=E;E.visible=true;M.gasParts.push(E);
+    mbox(E,0.72,0.24,0.56,SH.dark,0,0.62,1.3);                        // block
+    mbox(E,0.68,0.06,0.52,SH.roof,0,0.77,1.3);                        // head cover
+    [-0.25,-0.085,0.085,0.25].forEach(x=>mbox(E,0.06,0.04,0.46,SH.chrome,x,0.81,1.3));   // coil / plug caps
+    mbox(E,0.3,0.14,0.36,SH.chrome,0.0,0.62,1.68);                    // intake / airbox
+    mbox(E,0.9,0.38,0.05,SH.dark,0,0.66,1.86);                        // radiator
+    mbox(E,0.26,0.18,0.2,SH.roof,-0.52,0.58,1.12);                    // battery
+    mbox(E,0.14,0.14,0.14,SH.chrome,0.52,0.6,1.1);                    // coolant reservoir
+    mbox(E,0.7,0.05,0.05,SH.roof,0,0.56,1.0);                         // belt drive
+    mpipe(E,0.08,0.06,SH.chrome,0.28,0.6,1.02,true);mpipe(E,0.06,0.06,SH.chrome,-0.2,0.6,1.02,true);   // pulleys
+    mpipe(E,0.04,0.62,SH.chrome,0.38,0.54,1.32,true);mpipe(E,0.04,0.62,SH.chrome,-0.38,0.54,1.32,true); // hoses / manifold runners
+    mbox(E,0.04,0.07,0.04,SH.chrome,0.26,0.83,1.1);                   // oil cap
   }
   [-1,1].forEach(sd=>evBar(M,g,0.02,0.05,4.34,sd*0.93,0.52,0));   // sides, running right out to the corners
   evBar(M,g,1.88,0.05,0.02,0,0.52,2.16);                           // nose (under the headlights)
@@ -1874,16 +1895,17 @@ try{const pmv=new THREE.PMREMGenerator(rd),es=new THREE.Scene();
     }
 
     /* ---- road ribbons ---- */
-    const NB=6,NF=50,NS=NB+NF,PD=5.2;
+    const NB=30,NF=50,NS=NB+NF,PD=5.2,PATH_LEN=85,PATH_BACK=115;
     const mk=(o)=>new THREE.MeshBasicMaterial(Object.assign({side:THREE.DoubleSide,transparent:true,depthWrite:false},o));
     const M_ROAD=mk({}),M_LINE=mk({polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),
-          M_RAIL=mk({}),M_PATH=mk({polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4});
+          M_RAIL=mk({}),M_PATH=mk({vertexColors:true,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4});
     const ribbons=[];
     function ribbon(mat,order){
       const g=new THREE.BufferGeometry(),pos=new Float32Array(NS*18);
       g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+      let col=null;if(mat.vertexColors){col=new Float32Array(NS*24).fill(1);g.setAttribute('color',new THREE.BufferAttribute(col,4));}   // v7.5: per-vertex alpha for the fading FSD lines
       const m=new THREE.Mesh(g,mat);m.frustumCulled=false;m.renderOrder=order;sc.add(m);
-      const R={m:m,g:g,pos:pos};ribbons.push(R);return R;
+      const R={m:m,g:g,pos:pos,col:col};ribbons.push(R);return R;
     }
     const rRoad=ribbon(M_ROAD,1),rEdgeL=ribbon(M_LINE,2),rEdgeR=ribbon(M_LINE,2),rCen=ribbon(M_LINE,2),
           rRailL=ribbon(M_RAIL,3),rRailR=ribbon(M_RAIL,3),rPathL=ribbon(M_PATH,4),rPathR=ribbon(M_PATH,4);
@@ -1898,6 +1920,17 @@ try{const pmv=new THREE.PMREMGenerator(rd),es=new THREE.Scene();
     function at(out,j,d){out[0]=LX[j]+NX[j]*d;out[1]=LZ[j]+NZ[j]*d;return out;}
     function band(R,i,j,d1,d2,y){ // flat strip between lateral offsets d1..d2 over segment j..j+1
       at(A,j,d1);at(B,j,d2);at(C,j+1,d2);at(D,j+1,d1);quadAt(R,i,A,B,C,D,y,y);
+    }
+    // v7.5: clipped strip - a band between two fixed distances ahead of the car (clip interpolated inside the segment), so the FSD lines have a steady start and end and never pop segment by segment
+    function bandClip(R,i,j,d1,d2,y,zs,ze){
+      const z0=LZ[j],z1=LZ[j+1];if(Math.max(z0,z1)<=zs||Math.min(z0,z1)>=ze||Math.abs(z1-z0)<1e-5){NIL(R,i);return;}
+      let t0=clamp((zs-z0)/(z1-z0),0,1),t1=clamp((ze-z0)/(z1-z0),0,1);if(t0>t1){const t=t0;t0=t1;t1=t;}
+      const ax=LX[j]+NX[j]*d1,az=LZ[j]+NZ[j]*d1,bx=LX[j]+NX[j]*d2,bz=LZ[j]+NZ[j]*d2,cx=LX[j+1]+NX[j+1]*d2,cz=LZ[j+1]+NZ[j+1]*d2,dx=LX[j+1]+NX[j+1]*d1,dz=LZ[j+1]+NZ[j+1]*d1;
+      A[0]=ax+(dx-ax)*t0;A[1]=az+(dz-az)*t0;B[0]=bx+(cx-bx)*t0;B[1]=bz+(cz-bz)*t0;
+      C[0]=bx+(cx-bx)*t1;C[1]=bz+(cz-bz)*t1;D[0]=ax+(dx-ax)*t1;D[1]=az+(dz-az)*t1;
+      quadAt(R,i,A,B,C,D,y,y);
+      const al=z=>z<0?Math.pow(clamp(1+z/PATH_BACK,0,1),1.3):clamp((PATH_LEN-z)/25,0,1),q=R.col,o=i*24,zz=[A[1],B[1],C[1],A[1],C[1],D[1]];
+      for(let k=0;k<6;k++)q[o+k*4+3]=al(zz[k]);
     }
     function wall(R,i,j,d,h){at(A,j,d);at(B,j+1,d);C[0]=B[0];C[1]=B[1];D[0]=A[0];D[1]=A[1];quadAt(R,i,A,B,C,D,0,h);}
 
@@ -1940,10 +1973,10 @@ try{const pmv=new THREE.PMREMGenerator(rd),es=new THREE.Scene();
         band(rEdgeL,j,j,-3.38,-3.2,0.03);band(rEdgeR,j,j,3.2,3.38,0.03);
         if((gi&3)<2)band(rCen,j,j,-0.07,0.07,0.03);else NIL(rCen,j);
         if(railOn(gi&~1)){wall(rRailL,j,j,-PD,0.55);wall(rRailR,j,j,PD,0.55);}else{NIL(rRailL,j);NIL(rRailR,j);}
-        if(pathOn&&j>=jp&&j<jp+26){band(rPathL,j,j,lc-1.4,lc-1.12,0.05);band(rPathR,j,j,lc+1.12,lc+1.4,0.05);}
+        if(pathOn&&j<NS-1){bandClip(rPathL,j,j,lc-1.4,lc-1.12,0.05,-PATH_BACK,PATH_LEN);bandClip(rPathR,j,j,lc+1.12,lc+1.4,0.05,-PATH_BACK,PATH_LEN);}
         else{NIL(rPathL,j);NIL(rPathR,j);}
       }
-      for(const R of ribbons)R.g.attributes.position.needsUpdate=true;
+      for(const R of ribbons){R.g.attributes.position.needsUpdate=true;if(R.col)R.g.attributes.color.needsUpdate=true;}
       // obstacles: real shapes (trees, pines, rocks, cacti) at their true size and rotation
       let k=0;const cc=Math.floor(car.idx/N);
       for(let ci=cc-1;ci<=cc+4&&k<OBS;ci++){
@@ -2008,8 +2041,8 @@ try{const pmv=new THREE.PMREMGenerator(rd),es=new THREE.Scene();
       // frunk / trunk lids swing open and shut
       {const st=dt/0.7;VZ.of+=clamp(VZ.fT-VZ.of,-st,st);VZ.ot+=clamp(VZ.tT-VZ.ot,-st,st);
        const fe=VZ.of*VZ.of*(3-2*VZ.of),te=VZ.ot*VZ.ot*(3-2*VZ.ot);
-       for(const k in models){const m=models[k];if(m.eng)m.eng.visible=fe>0.04&&shownPt==='gas';if(m.frunk)m.frunk.g.rotation.x=m.frunk.ang*fe;if(m.trunk)m.trunk.g.rotation.x=m.trunk.ang*te;}
-       for(const k in car.models){const m=car.models[k];if(m.frunk)m.frunk.g.rotation.x=m.frunk.ang*fe;if(m.eng)m.eng.visible=fe>0.04&&shownPt==='gas';if(m.trunk)m.trunk.g.rotation.x=m.trunk.ang*te;}}   // v6.4: the real car's frunk / trunk open too
+       for(const k in models){const m=models[k];if(m.frunk)m.frunk.g.rotation.x=m.frunk.ang*fe;if(m.trunk)m.trunk.g.rotation.x=m.trunk.ang*te;}
+       for(const k in car.models){const m=car.models[k];if(m.frunk)m.frunk.g.rotation.x=m.frunk.ang*fe;if(m.trunk)m.trunk.g.rotation.x=m.trunk.ang*te;}}   // v6.4: the real car's frunk / trunk open too
       // wheels / steering / body attitude follow the game car
       const ws=car.wheelsSpin;for(let i=0;i<ws.length&&i<M.wheelsSpin.length;i++)M.wheelsSpin[i].rotation.x=ws[i].rotation.x;
       const fp=car.frontPivots;for(let i=0;i<fp.length&&i<M.frontPivots.length;i++)M.frontPivots[i].rotation.y=fp[i].rotation.y;
@@ -2032,7 +2065,7 @@ try{const pmv=new THREE.PMREMGenerator(rd),es=new THREE.Scene();
        dPos.set(r0*Math.cos(e1)*Math.sin(a1),r0*Math.sin(e1),r0*Math.cos(e1)*Math.cos(a1));   // orbit the drive camera around the car
        dTgt.lerp(carPt,clamp(Math.hypot(VZ.yaw,VZ.pitch)*3+VZ.rvA*1.5,0,1));}                            // ...and look at the car once orbited
       {  // v6.9: sensors active -> swing up to a bird's-eye view of the car, and back down a moment after everything is clear
-        const want=VZ.tgt===0&&PX.list.length>0;VZ.pxT=want?(VZ.pxT||0)+dt:0;VZ.topHold=VZ.pxT>=1.0?1.4:Math.max(0,(VZ.topHold||0)-dt);   // only swing up after the sensors have been active for at least 1.5 s
+        const want=VZ.tgt===0&&PX.list.length>0;VZ.pxT=want?(VZ.pxT||0)+dt:0;VZ.topHold=VZ.pxT>=1.0?1.4:Math.max(0,(VZ.topHold||0)-dt);if(chillOn&&VZ.tgt===0)VZ.topHold=1.4;   // CHILL: always the bird's-eye view   // only swing up after the sensors have been active for at least 1.5 s
         VZ.topK=(VZ.topK||0)+clamp((VZ.topHold>0?1:0)-(VZ.topK||0),-dt/0.55,dt/0.55);
         topE=VZ.topK*VZ.topK*(3-2*VZ.topK);
         if(topE>0){tPos.set(0,10.5*lenK+1,-0.9);tTgt.set(0,0,0.5);dPos.lerp(tPos,topE);dTgt.lerp(tTgt,topE);}
@@ -2074,6 +2107,7 @@ window.addEventListener('keydown',e=>{
   if(e.repeat)return;
   switch(e.code){
     case 'KeyF':setAuto(!auto);break;
+    case 'KeyG':setChill(!chillOn);break;
     case 'KeyQ':setCruise(!cruiseOn);break;
     case 'Equal':case 'NumpadAdd':nudgeCruise(5);break;
     case 'Minus':case 'NumpadSubtract':nudgeCruise(-5);break;
@@ -2101,6 +2135,7 @@ window.addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
 /* =====================================================================
    State, UI
    ===================================================================== */
+let chillOn=false,manualGears=false,selGear='P';const CHILL_MAX=20*0.44704;   // CHILL top speed: 20 mph
 let auto=false,camMode=0,tod=15.5,todAuto=false,rainTarget=0,rainAmt=0,cruiseOn=false,cruiseSet=100,cruiseI=0,maxOn=true,maxKmh=100,time=0;
 const camNames=['CHASE','HOOD','INTERIOR','DRONE'];
 const $=id=>document.getElementById(id);
@@ -2118,10 +2153,37 @@ function setSignal(n,silent){
   if(!silent)toast(n===1?'Left turn signal':n===2?'Right turn signal':'Turn signal off');
 }
 function setAuto(on,silent){
+  if(on&&chillOn){toast('FSD is not available in CHILL');$('auto').checked=false;return;}
+  if(!on&&auto&&manualGears)syncSelGear();
   if(on!==auto){if(on)playApOn();else playApOff();}
   if(on&&!auto){AP.st=car.steer;AP.dec=0;AP.thr=0;AP.braking=false;}
   auto=on;$('auto').checked=on;$('chipAuto').classList.toggle('on',on);$('maxBox').classList.toggle('dis',!on);
   if(!silent)toast(on?'FSD on':'FSD off');
+}
+function syncSelGear(){selGear=car.vf<-0.5?'R':(Math.abs(car.vf)<1.5?'P':'D');}
+function gearManual(){return manualGears&&!chillOn&&!auto;}
+function hintGear(m){if(time-(car.hintT||-9)>2.5){car.hintT=time;toast(m);}}
+function setChill(on,silent){
+  if(on===chillOn)return;
+  if(on&&auto)setAuto(false,true);
+  chillOn=on;$('chillChk').checked=on;hudForce=true;
+  if(!on&&manualGears)syncSelGear();
+  if(!silent)toast(on?'CHILL: sensors on, max 20 mph':'CHILL off');
+}
+function setManual(on,silent){
+  manualGears=on;$('manualChk').checked=on;hudForce=true;
+  if(on)syncSelGear();
+  try{localStorage.setItem('slowroads.manual',on?'1':'0');}catch(e){}
+  if(!silent)toast(on?'Manual gears: tap P R N D on the screen':'Automatic gears');
+}
+function setGear(g){
+  if(g==='C'){setChill(!chillOn);return;}
+  if(!manualGears){toast('Turn on Manual gears in the menu to shift P R N D (CHILL works in auto)');return;}
+  const vf=car.vf;
+  if(g==='P'&&Math.abs(vf)>1){toast('Stop the car before selecting P');return;}
+  if((g==='D'&&vf<-1.5)||(g==='R'&&vf>1.5)){toast('Stop the car before changing direction');return;}
+  if(chillOn)setChill(false,true);
+  selGear=g;hudForce=true;toast('Gear '+g);
 }
 function updateViewVis(){
   const inter=camMode===2;
@@ -2160,7 +2222,7 @@ function setCurve(m){
   curveMul=m;knocked.clear();
   const keep=Math.max(car.idx+2,2);if(pts.length>keep)pts.length=keep;   // keep the road under the car, regenerate everything ahead of it
   ensurePoints(car.idx+4);
-  clearChunks();
+  clearChunks();skidClear();
 }
 $('curve').addEventListener('input',e=>{
   const v=parseFloat(e.target.value);$('curveVal').textContent=Math.round(v)+'%';
@@ -2270,6 +2332,9 @@ function playBelt(on){
   }
 }
 $('boostChk').addEventListener('change',e=>setBoost(e.target.checked));
+$('manualChk').addEventListener('change',e=>setManual(e.target.checked));
+$('chillChk').addEventListener('change',e=>setChill(e.target.checked));
+try{if(localStorage.getItem('slowroads.manual')==='1')setManual(true,true);}catch(e){}
 $('hdChk').addEventListener('change',e=>setHeads(e.target.checked));
 $('kbBtn').onclick=toggleKb;
 $('carBtn').onclick=toggleCar;
@@ -2368,8 +2433,8 @@ function updateRoadWarn(dt,g){
 const PX={list:[],stop:false,beepT:0,min:9};   // covers every side of the car: front, rear and both flanks
 function updateProx(dt,g){
   const L=PX.list;L.length=0;
-  if(VZ.tgt!==0){PX.stop=false;PX.min=9;return;}
-  const R=2.6,cl=VC.cl,cw=VC.cw,c=Math.cos(car.h),s=Math.sin(car.h),cc=Math.floor(car.idx/N),lim=(cl+R+4);
+  if(VZ.tgt!==0&&!chillOn){PX.stop=false;PX.min=9;return;}
+  const R=chillOn?3.4:2.6,cl=VC.cl,cw=VC.cw,c=Math.cos(car.h),s=Math.sin(car.h),cc=Math.floor(car.idx/N),lim=(cl+R+4);
   for(let ci=cc-1;ci<=cc+1;ci++){
     const ch=chunks.get(ci);if(!ch)continue;
     for(const o of ch.obs){
@@ -2394,15 +2459,15 @@ function resetCar(){
   setRoadWarn(0);RW.offT=RW.wrongT=0;
   const i=nearestIdx(car.x,car.z,car.idx),p=pts[i],q=pts[i+1];
   car.x=p.x;car.z=p.z;car.h=Math.atan2(q.x-p.x,q.z-p.z);car.vx=car.vz=0;car.vf=0;car.steer=0;car.yawRate=0;car.idx=i;
-  car.gear=0;car.shiftT=0;car.lean=0;
+  car.gear=0;car.shiftT=0;car.lean=0;car.drift=car.skid=0;skLast[0]=skLast[1]=null;
   car.y=groundAt(car.x,car.z,car.idx).y;car.air=false;car.vy=0;car.pys=undefined;
 }
 /* v6.7 autopilot: pure pursuit on the right-lane centre line.
    - steering is computed as a path curvature and converted to a wheel angle with the car's real steering model, so the
      same gains work at 20 or 250 km/h (no weaving at speed, no lazy turn-in when slow)
    - the speed profile looks ~250 m ahead and brakes early enough to take every bend inside the grip limit */
-const LANE_C=1.64;
-const AP={st:0,dec:0,thr:0,braking:false,rev:0,revD:0,stuck:0,hold:0,zero:0,wd:0,mv:0,mvD:0,mvN:0,mvStop:false,sF:1,legT:0,mst:0,Lp:0};
+const LANE_C=1.64,FSD_MAX=100*1.609344/3.6;   // v7.5: FSD speed ceiling, 100 mph in m/s
+const AP={sI:0.3,st:0,dec:0,thr:0,braking:false,rev:0,revD:0,stuck:0,hold:0,zero:0,wd:0,mv:0,mvD:0,mvN:0,mvStop:false,sF:1,legT:0,mst:0,Lp:0};
 function apLanePt(u){            // point on the lane centre line at fractional point index u
   const i=Math.floor(u),f=u-i,p=pts[i],q=pts[i+1],h=lerp(p.h,q.h,f);
   return {x:lerp(p.x,q.x,f)-Math.cos(h)*LANE_C,z:lerp(p.z,q.z,f)+Math.sin(h)*LANE_C};
@@ -2492,8 +2557,9 @@ function autopilot(dt){
   AP.st+=(cmd-AP.st)*(1-Math.exp(-dt*12));                              // soften tiny jitters
   // --- speed (v6.8): look ahead, brake only as hard as the next bend really needs, ease in and out
   const aBrkMax=VC.brake*(tune.brake/100)*(1-0.3*wetFactor()),aLat=1.0*VC.lat*(car.gripMul||1);   // v7.1: keep a wider grip margin in bends
-  let cap=maxOn?maxKmh/3.6:250/3.6;
+  let cap=maxOn?maxKmh/3.6:FSD_MAX;
   if(cruiseOn)cap=Math.min(cap,cruiseSet/3.6);
+  cap=Math.min(cap,FSD_MAX);                                           // v7.5: whatever is set, FSD never goes above 100 mph
   if(Math.abs(xte)>1.2)cap=Math.min(cap,Math.max(8,v-1.5*(Math.abs(xte)-1.2)));   // drifting off the lane: slow down, never speed up
   if(stormAmt>0.05)cap=Math.min(cap,22);                              // standing water: stay under the hydroplaning speed              // far from the lane: just don't accelerate
   let need=0;                                                          // deceleration (m/s^2) needed to be at a safe speed at every point ahead
@@ -2512,10 +2578,14 @@ function autopilot(dt){
   const dd=dReq-AP.dec;                                                // jerk-limited brake ramp
   AP.dec+=dd>0?Math.min(dd,2.6*dt):Math.max(dd,-4*dt);
   let thr=0,brk=AP.dec>0.05?clamp(AP.dec/aBrkMax,0,1):0;
-  if(cruiseOn){const c=cruiseCtl(v,cap,dt);thr=(AP.braking||AP.dec>0.3)?0:c.thr;}
-  else{
-    const tgt=(AP.braking||need>0.5||AP.dec>0.3||v>cap-0.4)?0:clamp((cap-v)*0.45,0,1);
-    AP.thr=tgt>AP.thr?Math.min(tgt,AP.thr+1.2*dt):tgt;thr=AP.thr;
+  {   // v7.5: one PI speed controller for FSD, so a stable drive settles on the speed the user set (it no longer creeps up on it and stalls a few km/h short)
+    const e=cap-v,hold=AP.braking||need>0.5||AP.dec>0.3;
+    let tgt=0;
+    if(!hold&&e>-0.35){
+      tgt=clamp(0.7*e+AP.sI,0,1);
+      if(tgt>0&&tgt<1)AP.sI=clamp(AP.sI+e*0.3*dt,-0.2,0.85);
+    }else if(hold)AP.sI=Math.min(AP.sI,0.4);
+    AP.thr=tgt>AP.thr?Math.min(tgt,AP.thr+1.6*dt):tgt;thr=AP.thr;
   }
   // --- v7.1 FSD: emergency braking for anything in the path, and reversing out when blocked
   {
@@ -2624,6 +2694,69 @@ function updateDebris(dt){
     if(p.y<gy){p.y=gy;if(d.vy<0)d.vy*=-0.25;d.vx*=0.6;d.vz*=0.6;d.wx*=0.6;d.wy*=0.6;d.wz*=0.6;}
   }
 }
+/* ===== v7.6 drifting: skid marks + tyre smoke ===== */
+const SKIDW={car:[-0.95,0.95],truck:[-1.02,1.02],moto:[0]},SKZ={car:-1.3,truck:-2.4,moto:-0.78},SKHW={car:0.14,truck:0.2,moto:0.07};
+const SKQ=1800,skPos=new Float32Array(SKQ*18),skGeo=new THREE.BufferGeometry();
+skGeo.setAttribute('position',new THREE.BufferAttribute(skPos,3));
+const skMesh=new THREE.Mesh(skGeo,new THREE.MeshBasicMaterial({color:0x0b0b0d,transparent:true,opacity:0.5,depthWrite:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-8,polygonOffsetUnits:-8}));
+skMesh.frustumCulled=false;skMesh.renderOrder=1;scene.add(skMesh);
+let skI=0,skWas=false;const skLast=[null,null];
+function skidClear(){skPos.fill(0);skGeo.attributes.position.needsUpdate=true;skI=0;skLast[0]=skLast[1]=null;}
+const SMN=70,smoke=[];
+const smTex=(function(){const cv=document.createElement('canvas');cv.width=cv.height=64;const x=cv.getContext('2d'),g=x.createRadialGradient(32,32,2,32,32,31);
+  g.addColorStop(0,'rgba(255,255,255,.9)');g.addColorStop(.5,'rgba(255,255,255,.4)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(cv);})();
+for(let i=0;i<SMN;i++){const m=new THREE.SpriteMaterial({map:smTex,transparent:true,depthWrite:false,opacity:0,color:0xffffff}),sp=new THREE.Sprite(m);sp.visible=false;scene.add(sp);
+  smoke.push({sp:sp,life:0,max:1,vx:0,vy:0,vz:0,s0:1});}
+let smAcc=0;
+function updateDrift(dt){
+  const on=car.skid>0.3&&!car.off&&!car.air,wx=SKIDW[shownVeh],zz=SKZ[shownVeh],hw=SKHW[shownVeh],s=Math.sin(car.h),c=Math.cos(car.h);
+  let dirty=false;
+  for(let k=0;k<wx.length;k++){
+    if(!on){skLast[k]=null;continue;}
+    const px=car.x+wx[k]*c+zz*s,pz=car.z-wx[k]*s+zz*c,L=skLast[k];
+    if(!L){skLast[k]={x:px,z:pz,y:groundAt(px,pz,car.idx).y+0.045,nx:0,nz:0,has:false};continue;}
+    const dx=px-L.x,dz=pz-L.z,d=Math.hypot(dx,dz);
+    if(d<0.22)continue;
+    if(d>3){skLast[k]=null;continue;}
+    const y=groundAt(px,pz,car.idx).y+0.045,nx=-dz/d*hw,nz=dx/d*hw;
+    if(!L.has){L.nx=nx;L.nz=nz;L.has=true;}
+    const o=(skI%SKQ)*18,P=[L.x+L.nx,L.y,L.z+L.nz,L.x-L.nx,L.y,L.z-L.nz,px-nx,y,pz-nz,L.x+L.nx,L.y,L.z+L.nz,px-nx,y,pz-nz,px+nx,y,pz+nz];
+    for(let i=0;i<18;i++)skPos[o+i]=P[i];
+    skI++;L.x=px;L.z=pz;L.y=y;L.nx=nx;L.nz=nz;dirty=true;
+  }
+  if(dirty)skGeo.attributes.position.needsUpdate=true;
+  const sk=car.skid>0.3;
+  if(sk&&!skWas)playSkidChirp();
+  skWas=sk;
+  // smoke
+  smAcc+=sk&&!car.air?dt*34*car.skid:0;
+  while(smAcc>=1){
+    smAcc-=1;
+    let p=null;for(let i=0;i<SMN;i++)if(smoke[i].life<=0){p=smoke[i];break;}
+    if(!p)break;
+    const k=Math.floor(Math.random()*wx.length),px=car.x+wx[k]*c+zz*s,pz=car.z-wx[k]*s+zz*c;
+    p.max=p.life=0.9+Math.random()*0.8;p.s0=0.5+Math.random()*0.4;
+    p.vx=car.vx*0.2+(Math.random()-0.5)*0.9;p.vy=0.5+Math.random()*0.5;p.vz=car.vz*0.2+(Math.random()-0.5)*0.9;
+    p.sp.position.set(px,car.y+0.25,pz);p.sp.visible=true;
+  }
+  const lum=0.3+0.7*clamp(dirLight.intensity/1.0,0,1),dr=Math.exp(-1.1*dt);
+  for(let i=0;i<SMN;i++){
+    const p=smoke[i];if(p.life<=0)continue;
+    p.life-=dt;if(p.life<=0){p.sp.visible=false;p.sp.material.opacity=0;continue;}
+    const t=1-p.life/p.max,q=p.sp.position;
+    q.x+=p.vx*dt;q.y+=p.vy*dt;q.z+=p.vz*dt;p.vx*=dr;p.vz*=dr;p.vy*=dr;
+    p.sp.scale.setScalar(p.s0+t*2.2);
+    p.sp.material.opacity=0.28*Math.pow(1-t,1.5)*Math.min(1,t*8);
+    p.sp.material.color.setScalar(lum);
+  }
+}
+function playSkidChirp(){
+  if(!AC||!master||!A.nbuf)return;
+  const t=AC.currentTime,n=AC.createBufferSource();n.buffer=A.nbuf;
+  const f=AC.createBiquadFilter();f.type='bandpass';f.Q.value=6;f.frequency.setValueAtTime(2600,t);f.frequency.exponentialRampToValueAtTime(1500,t+0.25);
+  const g=AC.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(0.35,t+0.015);g.gain.exponentialRampToValueAtTime(0.001,t+0.3);
+  n.connect(f);f.connect(g);g.connect(master);n.start(t,Math.random());n.stop(t+0.35);
+}
 function edgeWall(g,dt){ // v3.2: solid wall at the world edge
   const p=pts[g.i],q=pts[g.i+1],hr=lerp(p.h,q.h,g.t),rel=wrapPi(car.h-hr);
   const ext=VC.cw*Math.abs(Math.cos(rel))+VC.cl*Math.abs(Math.sin(rel)),over=Math.abs(g.d)+ext-WALL_P;
@@ -2707,8 +2840,8 @@ function updateCar(dt){
   boostK+=clamp((boostOn?1:0)-boostK,-dt*1.5,dt*1.5);
   PW=tunedPW();
   const wetK=wetFactor();
-  car.gripMul=Math.max(0.45,1-0.25*wetK);              // wet asphalt: less lateral grip
-  const brakeMul=(tune.brake/100)*(1-0.3*wetK);          // ...and longer braking distances
+  car.gripMul=Math.max(0.4,1-0.33*wetK);              // wet asphalt: less lateral grip
+  const brakeMul=(tune.brake/100)*(1-0.36*wetK);          // ...and longer braking distances
   const kUp=keys.w,kDn=keys.s,kL=keys.a,kR=keys.d,hb=!!keys.space;
   if((kL||kR||kUp||kDn)&&auto)setAuto(false);   // v7.3: gas / brake / steering hands control back
   let thr=kUp?1:0,brk=kDn?1:0,st=(kR?1:0)-(kL?1:0);
@@ -2717,8 +2850,18 @@ function updateCar(dt){
     if(kDn||hb)setCruise(false,'Cruise off (brake)');
     else if(!kUp){const c=cruiseCtl(Math.max(car.vf,0),cruiseSet/3.6,dt);thr=c.thr;brk=c.brk;}
   }
+  if(gearManual()){   // v7.6 manual P R N D
+    const g=selGear;
+    if(g==='R'){if(car.vf>-0.5&&thr>0){thr=0;hintGear('In R: select D to drive forward');}}
+    else{
+      if(brk>0&&car.vf<=0.8){brk=0;if(g==='D')hintGear('Select R to reverse');}
+      if(g==='P'||g==='N'){if(thr>0)hintGear('In '+g+': select D to drive');thr=0;}
+    }
+    if(g==='P')brk=0;
+  }
   car.thr=thr;
   car.brakeOn=(brk>0&&car.vf>-0.3)||hb;
+  car.drift+=clamp(((hb&&Math.abs(car.vf)>6&&!car.air)?1:0)-car.drift,-dt*2.5,dt*4);   // v7.6: handbrake drift amount
 
   // steering
   const rate=(auto?10:(st!==0?5:7))*VC.steerRate;
@@ -2726,7 +2869,7 @@ function updateCar(dt){
   if(sig){const d=sig===1?-car.steer:car.steer;if(d>0.3)sigPeak=1;else if(sigPeak&&d<0.08&&time-sigT0>0.8)setSignal(0,true);}   // v6.9: indicator cancels once the turn is finished
   const ms=VC.steerMax*(tune.steer/100)/(1+car.vf*car.vf*VC.sd),steerAng=car.steer*ms;
   let yaw=-steerAng*car.vf/VC.wb;
-  if(hb&&Math.abs(car.vf)>6)yaw*=1.35;
+  if(hb&&Math.abs(car.vf)>6)yaw*=1.15+0.95*car.drift;
   car.yawRate=lerp(car.yawRate,yaw,1-Math.exp(-dt*10));
   car.h+=car.yawRate*dt;
 
@@ -2749,6 +2892,7 @@ function updateCar(dt){
   let vf=car.vx*fx+car.vz*fz,vl=car.vx*rx+car.vz*rz;
   const g0=groundAt(car.x,car.z,car.idx);car.idx=g0.i;
   car.off=Math.abs(g0.d)>4.3;
+  if(chillOn&&vf>=-0.5)thrE*=clamp((CHILL_MAX-vf)/(CHILL_MAX*0.2),0,1);
 
   let a=0;car.pwrF=0;
   if(thrE>0){
@@ -2756,15 +2900,17 @@ function updateCar(dt){
       const vv=Math.max(vf,0);
       // EV: instant torque, flat then tapering with speed. Gas: torque follows gear + revs.
       const curve=PW.isEV?1-Math.pow(Math.min(vv/PW.V,1),1.6):(1-vv/PW.V)*gasTorque(vv);
-      a+=thrE*PW.A*curve*(1-0.12*wetK*(1-smooth(5,25,vv)));car.pwrF=PW.isEV?thrE*curve:0;
+      a+=thrE*PW.A*curve*(1-0.17*wetK*(1-smooth(5,25,vv)));car.pwrF=PW.isEV?thrE*curve:0;
     }else a+=thr*VC.brake*brakeMul;
   }
   if(brk>0){a-=vf>0.8?brk*VC.brake*brakeMul:brk*VC.rev*(PW.isEV?1.15:1)*clamp(1+vf/12,0,1);}
   const v0=vf;
   vf+=a*dt;
+  if(gearManual()&&selGear==='P')vf=Math.sign(vf)*Math.max(Math.abs(vf)-25*dt,0);
+  if(chillOn&&Math.abs(vf)>CHILL_MAX)vf=Math.sign(vf)*Math.max(CHILL_MAX,Math.abs(vf)-35*dt);
   let drag=VC.roll+VC.dk*vf*vf;
   if(car.off)drag+=1.5+Math.abs(vf)*0.18;
-  if(hb)drag+=6*(1-0.3*wetK);
+  if(hb)drag+=6*(1-0.6*car.drift)*(1-0.3*wetK);
   car.regen=false;
   if(thr===0&&brk===0&&vf>1){
     if(PW.isEV){drag+=PW.regen*clamp(vf/5,0,1);car.regen=true;}                 // regenerative lift-off braking
@@ -2778,7 +2924,9 @@ function updateCar(dt){
   const hydro=car.off?0:stormAmt*smooth(24,46,Math.abs(vf))*0.22;   // standing water in a storm: hydroplaning at speed
   const dfK=Math.min(Math.abs(vf)/45,1.6),dF=1+0.45*dfK*dfK;   // v7.1: aero downforce (~+45% grip at 57 m/s, more beyond) so the car feels planted
   car.landT=Math.max(0,(car.landT||0)-dt);
-  const grip=(hb?1.4:(car.off?3.5:6.5))*VC.grip*Math.max(0.35,car.gripMul-hydro)*(hb?1+0.15*(dF-1):dF)*(1+0.5*Math.min(car.landT,0.4));
+  const grip=(hb?(1.4-1.1*car.drift):(car.off?3.5:6.5))*VC.grip*Math.max(0.35,car.gripMul-hydro)*(hb?1+0.15*(dF-1):dF)*(1+0.5*Math.min(car.landT,0.4));
+  car.slip=Math.abs(vl);
+  {const sk=(car.drift>0.25&&!car.air&&Math.abs(vf)>4.5)?clamp(car.drift*(0.4+0.6*clamp(car.slip/3,0,1)),0,1):0;car.skid+=(sk-car.skid)*Math.min(1,dt*10);}
   vl*=Math.exp(-(car.air?0.15:grip)*dt);
   car.vx=fx*vf+rx*vl;car.vz=fz*vf+rz*vl;car.vf=vf;
   car.x+=car.vx*dt;car.z+=car.vz*dt;
@@ -2959,7 +3107,7 @@ function updateEnv(dt){
   }
   if(flash>0.001){cHor.lerp(cTmp.setRGB(0.85,0.9,1),0.55*flash);cTop.lerp(cTmp.setRGB(0.8,0.86,1),0.5*flash);}
   scene.fog.color.copy(cHor);scene.background.copy(cHor);
-  scene.fog.density=parseFloat($('fog').value)*(1+0.7*rainAmt+0.5*stormAmt);
+  scene.fog.density=parseFloat($('fog').value)*(1+1.7*rainAmt+1.3*stormAmt);   // v7.5: heavy rain really cuts the view
   skyMat.uniforms.top.value.copy(cTop);skyMat.uniforms.horizon.value.copy(cHor);
   skyMat.uniforms.sunDir.value.copy(sunDir);skyMat.uniforms.sunCol.value.copy(cSun);
   skyMat.uniforms.sunVis.value=smooth(-0.08,0.04,e)*(1-0.85*wxc);
@@ -3079,6 +3227,13 @@ function initAudio(){
   // rain
   A.rf=AC.createBiquadFilter();A.rf.type='highpass';A.rf.frequency.value=2200;
   A.rg=AC.createGain();A.rg.gain.value=0;noise().connect(A.rf);A.rf.connect(A.rg);A.rg.connect(master);
+  // v7.6 tyre screech while drifting: filtered noise + a wobbling squeal
+  A.skf=AC.createBiquadFilter();A.skf.type='bandpass';A.skf.frequency.value=1800;A.skf.Q.value=5;
+  A.skg=AC.createGain();A.skg.gain.value=0;noise().connect(A.skf);A.skf.connect(A.skg);A.skg.connect(master);
+  A.sko=AC.createOscillator();A.sko.type='sawtooth';A.sko.frequency.value=900;
+  A.skof=AC.createBiquadFilter();A.skof.type='bandpass';A.skof.frequency.value=1100;A.skof.Q.value=8;
+  A.skog=AC.createGain();A.skog.gain.value=0;A.sko.connect(A.skof);A.skof.connect(A.skog);A.skog.connect(master);A.sko.start();
+  A.skl=AC.createOscillator();A.skl.frequency.value=7;A.sklg=AC.createGain();A.sklg.gain.value=40;A.skl.connect(A.sklg);A.sklg.connect(A.sko.frequency);A.skl.start();
   // soft ambient pad
   [110,164.8,220.5,277.2].forEach((f,i)=>{
     const o=AC.createOscillator();o.type='sine';o.frequency.value=f*(1+i*0.0007);
@@ -3244,6 +3399,8 @@ function updateAudio(dt){
   A.wg.gain.setTargetAtTime((0.009+Math.pow(v/50,1.5)*0.085)*VC.wind,t,0.5);
   A.wf.frequency.setTargetAtTime(220+v*14,t,0.5);
   A.rg.gain.setTargetAtTime(biome.id==='snow'?rainAmt*0.015:rainAmt*0.1+stormAmt*0.07,t,0.2);
+  A.skg.gain.setTargetAtTime(car.skid*0.2,t,0.05);A.skf.frequency.setTargetAtTime(1300+v*22+car.slip*60,t,0.08);
+  A.skog.gain.setTargetAtTime(car.skid*car.skid*0.05,t,0.06);A.sko.frequency.setTargetAtTime(820+v*16+car.slip*40,t,0.08);
 }
 
 /* =====================================================================
@@ -3400,6 +3557,7 @@ function stepVol(d){const v=$('vol');v.value=clamp(parseFloat(v.value)+d,0,1).to
 const BIOME_IDS=['hills','desert','snow'];
 function stepBiome(d){setBiome(BIOME_IDS[(BIOME_IDS.indexOf(biome.id)+d+3)%3]);}
 const ACT={
+  gear:el=>{setGear(el.dataset.g);hudForce=true;},
   ap:()=>setAuto(!auto),
   cancel:()=>{if(auto||cruiseOn){if(auto)setAuto(false,true);if(cruiseOn)setCruise(false,'FSD & cruise off');else toast('FSD off');}else toast('No active assists');},
   menu:()=>$('panel').classList.toggle('hidden'),search:()=>$('panel').classList.toggle('hidden'),
@@ -3436,7 +3594,7 @@ function updateHUD(dt){
   dReg+=(car.regenF-dReg)*Math.min(1,dt*8);dPw+=(car.pwrF-dPw)*Math.min(1,dt*8);
   const rev=car.vf<-0.5,stopped=kmh<1.5&&car.thr===0&&!rev;
   // park / drive screen
-  if(stopped){parkT+=dt;if(parkT>1.0)setMode('park');}else{parkT=0;setMode('drive');}
+  if(stopped&&!chillOn){parkT+=dt;if(parkT>1.0)setMode('park');}else{parkT=0;setMode('drive');}
   // energy (cosmetic)
   if(started){tripT+=dt;tripM+=v*dt;}
   energy=clamp(energy-dt*(v*0.00012+car.thr*0.002)+(PW.isEV?car.regenF*0.003*dt:0),5,100);
@@ -3467,9 +3625,9 @@ function updateHUD(dt){
   hudT+=dt;if(hudT<0.05&&!hudForce)return;hudT=0;hudForce=false;
   // ---- text / state at 20 Hz ----
   $('spd').textContent=Math.round(kmh*UF);$('unit').textContent=useMph?'MPH':'KM/H';
-  const gl=rev?'R':(stopped?(PW.isEV?'P':'N'):'D');
-  ['P','R','N','D'].forEach(x=>$('g'+x).classList.toggle('on',x===gl));
-  $('gearV').textContent=rev?'R':(PW.isEV?(stopped?'P':'D'):(stopped?'N':String(car.gear+1)));
+  const man=gearManual(),gl=man?selGear:(rev?'R':(stopped?(PW.isEV?'P':'N'):'D'));
+  ['P','R','N','D'].forEach(x=>$('g'+x).classList.toggle('on',x===gl));$('gC').classList.toggle('on',chillOn);
+  $('gearV').textContent=man?(selGear==='D'&&!PW.isEV?String(car.gear+1):selGear):(rev?'R':(PW.isEV?(stopped?'P':'D'):(stopped?'N':String(car.gear+1))));
   $('gearBox').style.display=PW.isEV?'none':'';
   $('tsApI').classList.toggle('on',auto);$('tsApI').classList.toggle('tacc',!auto&&cruiseOn);
   $('navAp').classList.toggle('on',auto);
@@ -3693,6 +3851,7 @@ function frame(now){
   time+=dt;
   updateCar(dt);
   updateDebris(dt);
+  updateDrift(dt);
   updateChunks();
   updateEnv(dt);
   updateCamera(dt);
