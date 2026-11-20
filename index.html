@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SlowRoads: Endless Driving</title>
-<!-- v7.1 (update): landing/downforce physics, flush obstacle collisions, louder FSD chime, FSD (renamed from autopilot) with reverse + emergency braking, 1 s proximity top-view delay, gas engine under the frunk.
+<!-- v7.4: FSD turn-around now plans the fewest-move manoeuvre (apPlan): full lock, every leg uses all the free space, direction + lock searched per leg.
+     v7.1 (update): landing/downforce physics, flush obstacle collisions, louder FSD chime, FSD (renamed from autopilot) with reverse + emergency braking, 1 s proximity top-view delay, gas engine under the frunk.
      v7.1: car realism pass (materials only, design unchanged): per-pixel rounded-panel reflections, deeper clear-coat paint with flake, dark mirror glass, real wheel faces (spokes, rim lip, brake disc + caliper) with tread, lamp lens detail, contact shadow, and a richer reflection environment (sun, clouds, tree-line). v7.0: major graphics update (bloom, wet reflective asphalt, PBR car, realistic roadside, soft clouds). v6.9 (cont. 3): autopilot engage / disengage now play the real Tesla recordings (embedded), trimmed and loudness-matched to the same level (-16 LUFS). v6.9 (cont. 2): sensors cover every side and switch the top view to a bird's-eye view; signal lamps built into the head / tail light clusters; clicking a signal always selects it (click again = off); hazard button in the park light stack; autopilot chimes = the same two tones, rising to engage and reversed to disengage. v6.9 (cont.): red flashing screen border on road warnings; off-road warning only after two car-widths off the road; seatbelt button back in its drive spot, hazard lights button in the toolbar; turn signals / hazards show on the top-screen 3D car; Tesla-style proximity sensor arcs + STOP + beep; reworked autopilot chimes. v6.9: Tesla-style autopilot engage / disengage chimes; turn signals (park: two icons under the high beams, drive: 2x3 toolbar beside the ETA card with signals, seatbelt, headlights, auto, high beams; amber flashing lamps on the car, green flashing arrows, tick-tock sound, auto-cancel after the turn; keys , and .); headlight menu removed from the bottom apps. v6.8: "Turn back around" / "Get back on the road" warnings (Tesla beep, R to reset, auto-reset after 10 s); smoother autopilot braking that no longer crawls through bends; autopilot centred in the lane; the car follows the real mountain slope beside the road; three-lines icon on the bottom toolbar; time pill removed from the top screen. v6.7: autopilot rewritten (lane-centre pure pursuit with speed-independent steering, smooth, braking ahead of bends); the autopilot icon on the screen turns with the steering wheel. v6.6: the top-screen 3D view draws the real trees, pines, rocks and cacti (true shapes, sizes and rotation) instead of grey posts. v6.5: menus (shortcuts, vehicle, tuning, settings) open on the left side of the view. v6.4: frunk opens in the game, unified taskbar icons, headlight menu, drive seatbelt, max-speed icon, cleaner drive playback bar, reverse view, park drag fix -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2064%2064%27%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2731%27%20fill%3D%27%23fff%27%20stroke%3D%27%23e2e0db%27%20stroke-width%3D%271%27/%3E%0A%3Cg%20fill%3D%27none%27%20stroke%3D%27%2316191b%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2721%27%20stroke-width%3D%274.6%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2717.6%27%20stroke-width%3D%27.7%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.45%27/%3E%0A%3Cpath%20d%3D%27M11.4%2030.5%20Q20%2036.5%2027.4%2035.6%20M52.6%2030.5%20Q44%2036.5%2036.6%2035.6%27%20stroke-width%3D%273.4%27/%3E%0A%3Cpath%20d%3D%27M32%2036%20V52.5%27%20stroke-width%3D%273.6%27/%3E%0A%3Cpath%20d%3D%27M32%2011%20V15.5%27%20stroke-width%3D%272.2%27%20stroke%3D%27%2316191b%27/%3E%0A%3C/g%3E%0A%3Cpath%20d%3D%27M30%2011.2h4v4.6h-4z%27%20fill%3D%27%23d9423a%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%276.2%27%20fill%3D%27%2316191b%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%273.6%27%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%27.9%27%20stroke-opacity%3D%27.7%27/%3E%0A%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%271.2%27%20fill%3D%27%23fff%27/%3E%0A%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,6 +45,9 @@ canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block}
 #zoomCtl .zb.off{opacity:.35;pointer-events:none}
 #zVal{min-width:54px;display:flex;align-items:center;justify-content:center;font-size:13px;letter-spacing:1px;font-variant-numeric:tabular-nums;
     border-left:1px solid rgba(95,242,255,.18);border-right:1px solid rgba(95,242,255,.18)}
+#fpsCtl{position:absolute;right:210px;top:16px;height:42px;min-width:74px;padding:0 12px;display:flex;align-items:center;justify-content:center;gap:5px;pointer-events:auto;cursor:pointer;transition:background .2s;color:#fff;border:1px solid rgba(95,242,255,.3);font-size:13px;letter-spacing:1px;font-variant-numeric:tabular-nums}
+#fpsCtl:hover{background:rgba(95,242,255,.2)}
+#fpsCtl small{font-size:9px;opacity:.65;letter-spacing:1.5px}
 #kbPanel{position:absolute;left:22px;bottom:78px;width:310px;padding:16px 18px 12px;pointer-events:auto;
     transition:opacity .25s,transform .25s;transform-origin:bottom left}
 #kbPanel.hidden{opacity:0;pointer-events:none;transform:translateY(8px) scale(.97)}
@@ -109,7 +113,7 @@ body{font-family:"Rajdhani","Inter","Segoe UI",system-ui,sans-serif;letter-spaci
 #menuBtn{border:1px solid rgba(95,242,255,.3)}
 #brand{font-family:Orbitron,Rajdhani,sans-serif;letter-spacing:7px;font-weight:500;opacity:.9;text-shadow:0 0 12px #5ff2ff}
 #menuBtn:hover{background:rgba(95,242,255,.2);box-shadow:0 0 18px rgba(95,242,255,.45),inset 0 0 10px rgba(95,242,255,.15)}
-#panel,#kbPanel,#carPanel{font-size:14px}
+#panel,#kbPanel,#carPanel,#gfxPanel{font-size:14px}
 .kbRow{font-size:14px}
 kbd{border-color:rgba(95,242,255,.4);color:#e6fdff;box-shadow:0 0 6px rgba(95,242,255,.2)}
 #kbPanel h4,#panel h3{color:#5ff2ff;opacity:.75}
@@ -132,6 +136,16 @@ kbd{border-color:rgba(95,242,255,.4);color:#e6fdff;box-shadow:0 0 6px rgba(95,24
 #chipPwr{min-width:56px;text-align:center}
 #maxBox.dis{opacity:.4;pointer-events:none}
 #kbPanel{max-height:calc(100vh - 100px);overflow-y:auto}
+#gfxPanel{position:absolute;left:22px;bottom:78px;width:310px;padding:16px 18px 14px;pointer-events:auto;font-size:14px;transition:opacity .25s,transform .25s;transform-origin:bottom left;max-height:calc(100vh - 100px);overflow-y:auto}
+#gfxPanel.hidden{opacity:0;pointer-events:none;transform:translateY(8px) scale(.97)}
+#gfxPanel .kbTitle{display:flex;justify-content:space-between;align-items:center;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:500;opacity:.85;padding-bottom:10px;border-bottom:1px solid rgba(95,242,255,.2)}
+#gfxPanel .kbTitle kbd{font-size:10px}
+#gfxPanel h4{font-size:9.5px;letter-spacing:2.5px;text-transform:uppercase;font-weight:500;opacity:.75;margin:14px 0 8px;color:#5ff2ff}
+#gfxPanel .gq{display:flex;flex-direction:column;gap:6px}
+#gfxPanel .gq button{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:10px;font:inherit;font-size:13px;color:inherit;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);cursor:pointer;text-align:left;transition:background .2s}
+#gfxPanel .gq button:hover{background:rgba(255,255,255,.12)}
+#gfxPanel .gq button.on{background:#2c6bed;border-color:#2c6bed;color:#fff}
+#gfxPanel .gq small{font-size:10.5px;opacity:.65}
 #tunePanel{position:absolute;left:22px;bottom:78px;width:310px;padding:16px 18px 14px;pointer-events:auto;font-size:14px;
     transition:opacity .25s,transform .25s;transform-origin:bottom left;max-height:calc(100vh - 100px);overflow-y:auto}
 #tunePanel.hidden{opacity:0;pointer-events:none;transform:translateY(8px) scale(.97)}
@@ -285,10 +299,10 @@ kbd{border-color:rgba(95,242,255,.4);color:#e6fdff;box-shadow:0 0 6px rgba(95,24
 #volPop svg{width:18px;height:18px;flex:none}
 #volRange{flex:1;accent-color:#fff;height:18px}
 /* ---- panels opened from the screen (Tesla look) ---- */
-#kbPanel,#carPanel,#tunePanel,#panel{background:rgba(26,27,30,.95);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.1);border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.5);
+#kbPanel,#carPanel,#tunePanel,#gfxPanel,#panel{background:rgba(26,27,30,.95);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.1);border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.5);
   font-family:"Montserrat","Gotham SSM","Inter","Segoe UI",system-ui,sans-serif;font-size:13px;letter-spacing:0;color:#f2f3f5}
-#kbPanel .kbTitle,#carPanel .kbTitle,#tunePanel .kbTitle{border-bottom-color:rgba(255,255,255,.12);font-weight:600;letter-spacing:.16em}
-#kbPanel h4,#carPanel h4,#tunePanel h4,#panel h3{color:#8fb0ff;opacity:1;font-weight:600;letter-spacing:.16em}
+#kbPanel .kbTitle,#carPanel .kbTitle,#tunePanel .kbTitle,#gfxPanel .kbTitle{border-bottom-color:rgba(255,255,255,.12);font-weight:600;letter-spacing:.16em}
+#kbPanel h4,#carPanel h4,#tunePanel h4,#gfxPanel h4,#panel h3{color:#8fb0ff;opacity:1;font-weight:600;letter-spacing:.16em}
 #tunePanel .lbl span:last-child{color:#8fb0ff;font-family:inherit}
 .kbRow{font-size:13px}
 kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gradient(rgba(255,255,255,.14),rgba(255,255,255,.06));box-shadow:0 1px 2px rgba(0,0,0,.3);color:#fff}
@@ -362,7 +376,7 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
 .tile svg{width:23px;height:23px}
 .clim{display:flex;align-items:center;gap:4px;font-size:17px;font-weight:400;color:#ececf0;min-width:62px;justify-content:center;font-variant-numeric:tabular-nums}
 #volPop{position:absolute;right:10px;bottom:72px;z-index:8;width:200px;padding:12px 14px;border-radius:12px;background:rgba(36,37,41,.97);color:#fff;display:flex;align-items:center;gap:10px;box-shadow:0 6px 22px rgba(0,0,0,.4);opacity:0;pointer-events:none;transform:translateY(6px);transition:opacity .2s,transform .2s}
-#kbPanel,#carPanel,#tunePanel{left:22px;right:auto;bottom:14px;max-height:calc(100vh - 28px);transform-origin:bottom left}
+#kbPanel,#carPanel,#tunePanel,#gfxPanel{left:22px;right:auto;bottom:14px;max-height:calc(100vh - 28px);transform-origin:bottom left}
 #panel{left:22px;right:auto;top:68px;max-height:calc(100vh - 90px)}
 
 /* ---- v5.0 two separate screens: top = visualisation, bottom = map + menus ---- */
@@ -382,6 +396,7 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
   <div id="menuBtn" class="glass" title="Settings (Esc)">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
   </div>
+  <div id="fpsCtl" class="glass"><span id="fpsVal">--</span><small>FPS</small></div>
   <div id="zoomCtl" class="glass">
     <div class="zb" id="zOut" title="Zoom out">&minus;</div>
     <div id="zVal" title="Camera zoom">100%</div>
@@ -492,6 +507,7 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
     </div>
     <div class="grp">
       <div class="clim"><i data-act="clim" data-s="r" data-d="-1">‹</i><span id="climR">72</span><i data-act="clim" data-s="r" data-d="1">›</i></div>
+      <div class="tb" id="tbGfx" title="Graphics quality"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 13l3-3.5 2.5 2.5 2-2 2.5 3"/></svg></div>
       <div class="tb" id="tbVol" data-act="vol" title="Volume"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 4V5L7 9z"/><path id="volWaves" d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
     </div>
   </div>
@@ -564,6 +580,16 @@ kbd{font-family:inherit;border-color:rgba(255,255,255,.22);background:linear-gra
     <input type="range" id="tuneBrake" min="50" max="150" step="5" value="100">
     <div id="tuneNote">Sport boost (Shift) stacks on top of these settings.</div>
     <button class="btn" id="tuneReset">Reset to stock</button>
+  </div>
+  <div id="gfxPanel" class="glass hidden">
+    <div class="kbTitle"><span>Graphics</span><kbd id="gfxFps">--</kbd></div>
+    <h4>Quality</h4>
+    <div class="gq">
+      <button data-q="low">Low<small>Fastest</small></button>
+      <button data-q="medium">Medium<small>Bloom</small></button>
+      <button data-q="high">High<small>Bloom + reflections</small></button>
+      <button data-q="ultra">Ultra<small>Full resolution</small></button>
+    </div>
   </div>
   <div id="toast" class="glass"></div>
   <div id="roadWarn"><b id="rwTxt">Turn back around</b><kbd id="rwKey" title="Reset car to road (R)">R</kbd></div>
@@ -1903,7 +1929,10 @@ try{const pmv=new THREE.PMREMGenerator(rd),es=new THREE.Scene();
         const dx=p.x-car.x,dz=p.z-car.z,nx=-Math.cos(p.h),nz=Math.sin(p.h);
         LX[j]=dx*c-dz*s;LZ[j]=dx*s+dz*c;NX[j]=nx*c-nz*s;NZ[j]=nx*s+nz*c;
       }
-      const dcar=-(LX[cj]*NX[cj]+LZ[cj]*NZ[cj]),side=dcar>=0?1:-1,lc=1.63*side;
+      const dcar=-(LX[cj]*NX[cj]+LZ[cj]*NZ[cj]);
+      if(Math.abs(dcar)>0.35||!VZ.pSide)VZ.pSide=dcar>=0?1:-1;   // v7.3: hysteresis so the corridor never flips side near the centre line
+      const side=VZ.pSide,lc=1.63*side;
+      let jp=cj;while(jp<NS-1&&LZ[jp]<0)jp++;   // v7.3: start at the car, never behind it
       const pathOn=auto||cruiseOn;
       for(let j=0;j<NS;j++){
         const gi=i0+j;
@@ -1911,7 +1940,7 @@ try{const pmv=new THREE.PMREMGenerator(rd),es=new THREE.Scene();
         band(rEdgeL,j,j,-3.38,-3.2,0.03);band(rEdgeR,j,j,3.2,3.38,0.03);
         if((gi&3)<2)band(rCen,j,j,-0.07,0.07,0.03);else NIL(rCen,j);
         if(railOn(gi&~1)){wall(rRailL,j,j,-PD,0.55);wall(rRailR,j,j,PD,0.55);}else{NIL(rRailL,j);NIL(rRailR,j);}
-        if(pathOn&&j>=cj&&j<cj+26){band(rPathL,j,j,lc-1.4,lc-1.12,0.05);band(rPathR,j,j,lc+1.12,lc+1.4,0.05);}
+        if(pathOn&&j>=jp&&j<jp+26){band(rPathL,j,j,lc-1.4,lc-1.12,0.05);band(rPathR,j,j,lc+1.12,lc+1.4,0.05);}
         else{NIL(rPathL,j);NIL(rPathR,j);}
       }
       for(const R of ribbons)R.g.attributes.position.needsUpdate=true;
@@ -2177,10 +2206,13 @@ $('goRelax').onclick=e=>{e.stopPropagation();startGame(true);};
 let kbAuto=0;
 function setKb(open){$('kbPanel').classList.toggle('hidden',!open);$('kbBtn').classList.toggle('active',open);}
 function setCar(open){$('carPanel').classList.toggle('hidden',!open);$('carBtn').classList.toggle('active',open);}
-function toggleKb(){clearTimeout(kbAuto);const o=$('kbPanel').classList.contains('hidden');setKb(o);if(o){setCar(false);setTune(false);}}
-function toggleCar(){clearTimeout(kbAuto);const o=$('carPanel').classList.contains('hidden');setCar(o);if(o){setKb(false);setTune(false);}}
+function toggleKb(){clearTimeout(kbAuto);const o=$('kbPanel').classList.contains('hidden');setKb(o);if(o){setCar(false);setTune(false);setGfx(false);}}
+function toggleCar(){clearTimeout(kbAuto);const o=$('carPanel').classList.contains('hidden');setCar(o);if(o){setKb(false);setTune(false);setGfx(false);}}
 function setTune(open){$('tunePanel').classList.toggle('hidden',!open);$('engBtn').classList.toggle('active',open);}
-function toggleTune(){clearTimeout(kbAuto);const o=$('tunePanel').classList.contains('hidden');setTune(o);if(o){setKb(false);setCar(false);}}
+function toggleTune(){clearTimeout(kbAuto);const o=$('tunePanel').classList.contains('hidden');setTune(o);if(o){setKb(false);setCar(false);setGfx(false);}}
+function setGfx(open){$('gfxPanel').classList.toggle('hidden',!open);$('tbGfx').classList.toggle('active',open);}
+function toggleGfx(){clearTimeout(kbAuto);const o=$('gfxPanel').classList.contains('hidden');setGfx(o);if(o){setKb(false);setCar(false);setTune(false);}}
+$('tbGfx').onclick=toggleGfx;$('fpsCtl').onclick=toggleGfx;
 $('engBtn').onclick=toggleTune;
 /* tuning sliders (saved in localStorage) */
 const TUNES=[['steer','tuneSteer','tuneSteerV'],['accel','tuneAccel','tuneAccelV'],['top','tuneTop','tuneTopV'],['brake','tuneBrake','tuneBrakeV']];
@@ -2370,10 +2402,80 @@ function resetCar(){
      same gains work at 20 or 250 km/h (no weaving at speed, no lazy turn-in when slow)
    - the speed profile looks ~250 m ahead and brakes early enough to take every bend inside the grip limit */
 const LANE_C=1.64;
-const AP={st:0,dec:0,thr:0,braking:false,rev:0,revD:0,stuck:0,hold:0};
+const AP={st:0,dec:0,thr:0,braking:false,rev:0,revD:0,stuck:0,hold:0,zero:0,wd:0,mv:0,mvD:0,mvN:0,mvStop:false,sF:1,legT:0,mst:0,Lp:0};
 function apLanePt(u){            // point on the lane centre line at fractional point index u
   const i=Math.floor(u),f=u-i,p=pts[i],q=pts[i+1],h=lerp(p.h,q.h,f);
   return {x:lerp(p.x,q.x,f)-Math.cos(h)*LANE_C,z:lerp(p.z,q.z,f)+Math.sin(h)*LANE_C};
+}
+/* v7.4 · universal "fewest moves" turn-around planner.
+   Called whenever FSD is boxed in (and again at every stop between legs). It simulates the car's own steering model
+   (heading changes by -steer*ms/wheelbase per metre) with FULL LOCK, drives every leg all the way to the nearest obstacle /
+   guard rail / world wall (nothing is left unused), and does an iterative-deepening search over direction + lock for each
+   leg. The shortest sequence of legs that ends with the nose pointing along the road with clear road ahead wins (ties:
+   least distance). Returns the first leg {dir:+1 fwd/-1 rev, st:steering lock, L:metres the leg may travel} or null. */
+const AP_OM=0.04,AP_RAIL=5.05;
+function apEnv(){                                                      // collision + "aligned" tests shared by the planner and the live manoeuvre
+  const gg0=groundAt(car.x,car.z,car.idx),cc=Math.floor(car.idx/N),obs=[];
+  for(let c=cc-1;c<=cc+1;c++){const ch=chunks.get(c);if(!ch)continue;
+    for(const o of ch.obs){const dx=o.x-car.x,dz=o.z-car.z;if(dx*dx+dz*dz<3600)obs.push(o);}}
+  // how far the car is inside something at this pose (<=0: clear). Mirrors the real collision code (obstacles, rails, world wall)
+  const excess=(x,z,h)=>{
+    const s=Math.sin(h),c=Math.cos(h);let ex=-1e9;
+    for(const o of obs){const dx=o.x-x,dz=o.z-z;if(dx*dx+dz*dz>(VC.cl+o.r+1)*(VC.cl+o.r+1))continue;
+      const f=dx*s+dz*c,l=-dx*c+dz*s,ef=f-clamp(f,-VC.cl,VC.cl),el=l-clamp(l,-VC.cw,VC.cw);
+      ex=Math.max(ex,o.r+AP_OM-Math.hypot(ef,el));}
+    const g=groundAt(x,z,gg0.i),p=pts[g.i],q=pts[g.i+1],hr=lerp(p.h,q.h,g.t),rel=wrapPi(h-hr),
+      ext=VC.cw*Math.abs(Math.cos(rel))+VC.cl*Math.abs(Math.sin(rel)),w=Math.abs(g.d)+ext;
+    if(railOn(g.i&~1))ex=Math.max(ex,w-AP_RAIL);
+    ex=Math.max(ex,w-(WALL_P-0.1));
+    return ex;};
+  const ok=(x,z,h,ex0)=>{const e=excess(x,z,h);return e<=0||e<ex0-1e-4?e:null;};   // clear, or at least backing out of an overlap
+  // v7.4.3: FSD's rail emergency brake kills any approach towards a rail that is close, so a turn must NOT end pointing at one
+  const towardRail=(x,z,h)=>{const g=groundAt(x,z,gg0.i);if(!railOn(g.i&~1))return false;
+    const p=pts[g.i],q=pts[g.i+1],hr=lerp(p.h,q.h,g.t),rel=wrapPi(h-hr),ext=VC.cw*Math.abs(Math.cos(rel))+VC.cl*Math.abs(Math.sin(rel));
+    return 4.8-(Math.abs(g.d)+ext)<1.6&&(g.d>0?1:-1)*Math.sin(wrapPi(hr-h))>0.03;};
+  const Ke=VC.steerMax*(tune.steer/100)/(1+4*4*VC.sd)/VC.wb;       // max heading change per metre
+  const aligned=(x,z,h)=>{                                             // v7.4.2: can the car drive off from here? simulate it steering back onto the road heading (not a rigid straight line)
+    const hrAt=(x,z)=>{const g=groundAt(x,z,gg0.i),p=pts[g.i],q=pts[g.i+1];return lerp(p.h,q.h,g.t);};
+    if(Math.abs(wrapPi(hrAt(x,z)-h))>=0.5||towardRail(x,z,h))return false;
+    const e0=excess(x,z,h),lim=Math.max(e0,-0.12)+0.02;   // never closer to anything than it is now; ~12 cm spare if it currently has room
+    for(let d=0;d<8;d+=0.5){
+      const al=wrapPi(hrAt(x,z)-h),nh=h+clamp(al*0.2,-Ke*0.35,Ke*0.35),mh=(h+nh)/2;
+      x+=Math.sin(mh)*0.5;z+=Math.cos(mh)*0.5;h=nh;
+      if(excess(x,z,h)>lim)return false;}
+    return Math.abs(wrapPi(hrAt(x,z)-h))<0.3;};
+  const straight=(x,z,h)=>{const g=groundAt(x,z,gg0.i),p=pts[g.i],q=pts[g.i+1];
+    if(Math.abs(wrapPi(lerp(p.h,q.h,g.t)-h))>=0.45||towardRail(x,z,h))return false;
+    const e0=Math.max(excess(x,z,h),0),sn=Math.sin(h),cs=Math.cos(h);
+    for(let d=1;d<=8;d++)if(excess(x+sn*d,z+cs*d,h)>e0+0.02)return false;
+    return true;};
+  return {gg0:gg0,excess:excess,ok:ok,aligned:(x,z,h)=>straight(x,z,h)||aligned(x,z,h)};
+}
+function apPlan(fixDir){
+  const {excess,ok,aligned}=apEnv();
+  const K=VC.steerMax*(tune.steer/100)/(1+4*4*VC.sd)/VC.wb;       // heading change per metre at full lock (leg speed ~3.5 m/s)
+  const DS=0.25,MAXL=45;
+  const leg=(x,z,h,dir,st)=>{
+    let s=0,e=excess(x,z,h);
+    while(s<MAXL){
+      const nh=h-st*dir*K*DS,mh=(h+nh)/2,nx=x+Math.sin(mh)*dir*DS,nz=z+Math.cos(mh)*dir*DS,ne=ok(nx,nz,nh,e);
+      if(ne===null)break;
+      x=nx;z=nz;h=nh;e=ne;s+=DS;
+      if(aligned(x,z,h))return {x:x,z:z,h:h,L:s,done:true};
+    }
+    return {x:x,z:z,h:h,L:s,done:false};};
+  let best=null,curLim=0;
+  const rec=(x,z,h,dir,left,dist,first)=>{
+    for(const st of [1,-1]){
+      const r=leg(x,z,h,dir,st);if(r.L<0.5)continue;
+      const f=first||{dir:dir,st:st,L:r.L,x:r.x,z:r.z,h:r.h},dd=dist+r.L;
+      if(r.done){if(!best||dd<best.dist)best={dir:f.dir,st:f.st,L:f.L,dist:dd,x:f.x,z:f.z,h:f.h,legs:curLim};}
+      else if(left>1)rec(r.x,r.z,r.h,-dir,left-1,dd,f);
+    }};
+  for(let lim=1;lim<=6&&!best;lim++){curLim=lim;
+    for(const d of (fixDir?[fixDir]:[1,-1]))rec(car.x,car.z,car.h,d,lim,0,null);
+  }
+  return best;
 }
 function autopilot(dt){
   const v=Math.max(car.vf,0);
@@ -2427,20 +2529,76 @@ function autopilot(dt){
         const gap=Math.abs(l)-VC.cw-o.r;
         if(f>0&&gap<0.8)clr=Math.min(clr,f-VC.cl-o.r);
         if(gap<2.0&&f<stopD+14){const m=clamp((2.0-gap)/2.0,0,1)*(1-clamp(f/(stopD+14),0,1)*0.5);if(m*Math.sign(l||1)*-1>Math.abs(bias)*Math.sign(bias||1)||!bias)bias=-Math.sign(l||1)*m*0.9;}}}
+    let railBlk=false,rgap=1e9,rvo=0;   // side guard rails (both directions of travel)
+    if(railOn(gg.i&~1)){
+      const p0=pts[gg.i],q0=pts[gg.i+1],hr=lerp(p0.h,q0.h,gg.t),rel=wrapPi(car.h-hr),ext=VC.cw*Math.abs(Math.cos(rel))+VC.cl*Math.abs(Math.sin(rel)),side=gg.d>0?1:-1;
+      rgap=4.8-(Math.abs(gg.d)+ext);rvo=car.vx*(-Math.cos(hr)*side)+car.vz*Math.sin(hr)*side;
+    }
     AP.bias=bias;
-    if(AP.rev>0){
-      AP.rev-=dt;AP.revD+=Math.max(-car.vf,0)*dt;
-      const al=Math.abs(wrapPi(Math.atan2(T.x-car.x,T.z-car.z)-car.h));
-      if(AP.rev<=0||clrB<1.2||AP.revD>7||(AP.revD>3&&al<0.35&&clr>6)){AP.rev=0;AP.hold=0.6;}
-      else{const s=cmd<0?1:-1;return {thr:0,brk:1,st:Math.abs(cmd)<0.25?-0.7*s*-1:-cmd};}
+    // real-world multi-point turn: when boxed in, alternate short reverse / forward legs on opposite steering locks,
+    // each leg stopping before the nearest obstacle or rail, until the nose points along the road again
+    const edgeGap=dd=>{const q=groundAt(car.x+fx*dd,car.z+fz*dd,car.idx);if(!railOn(q.i&~1))return 1e9;
+      const p0=pts[q.i],q0=pts[q.i+1],hr=lerp(p0.h,q0.h,q.t),rel=wrapPi(car.h-hr),fe=r=>VC.cw*Math.abs(Math.cos(r))+VC.cl*Math.abs(Math.sin(r)),ext=Math.max(fe(rel),fe(rel-0.2),fe(rel+0.2));   // allow for the body swinging while it turns
+      return 4.95-(Math.abs(q.d)+ext);};
+    const so=t=>{AP.mst+=clamp(t-AP.mst,-5*dt,5*dt);return AP.mst;};   // v7.2: steering slews instead of snapping lock to lock (removes the flicker)
+    // v7.2.1: while turning around the whole road width is usable (either lane); success = pointing along the road, not at the lane centre
+    const hrA=lerp(pts[gg.i].h,pts[gg.i+1].h,gg.t),alRoad=()=>wrapPi(hrA-car.h);
+    if(AP.mv){
+      AP.legT+=dt;
+      const al=alRoad(),gF=Math.min(clr,edgeGap(1.2)),gR=Math.min(clrB,edgeGap(-1.2));
+      const sp=Math.abs(car.vf);
+      if(AP.Lp>0?apEnv().aligned(car.x,car.z,car.h):(Math.abs(al)<0.6&&clr>8&&edgeGap(6)>0.8&&edgeGap(12)>0.5&&(sp<9||AP.mv>0)||(AP.mv>0&&Math.abs(al)<1.0&&gF>4&&clr>6&&edgeGap(4)>0.6))||AP.mvN>30){AP.mv=0;AP.hold=1.0;AP.mvN=0;AP.mvStop=false;}
+      else{
+        const aStop=Math.max(3,0.85*aBrkMax),gap=AP.mv>0?gF:gR,stopAt=(AP.zero>=2?0.02:0.1)+sp*sp/12;
+        // v7.4: with a plan, the leg runs until the planned free distance is used up (no 8 m cap, no early stop); without one, the old rules
+        if(!AP.mvStop&&(AP.Lp>0?(AP.Lp-AP.mvD<=sp*sp/(2*aStop)+0.03):((gap<stopAt&&(AP.mvD>0.25||AP.legT>0.7))||AP.mvD>8))){AP.mvStop=true;}
+        if(AP.mvStop){
+          if(sp<0.45){AP.zero=AP.mvD<0.4?(AP.zero||0)+1:0;AP.mvStop=false;AP.mv=-AP.mv;AP.mvD=0;AP.legT=0;AP.mvN++;
+            if(Math.abs(al)>0.15)AP.sF=-Math.sign(al);else if(AP.zero>=2)AP.sF=-AP.sF;   // re-aim every leg; flip the lock if two legs went nowhere   // switch direction (and steering lock) only at a standstill
+            // v7.4: re-plan from where the car really stopped: full lock, and the leg may use every last centimetre of free space
+            AP.Lp=0;if(AP.zero<2){const pl=apPlan(AP.mv);if(pl){AP.sF=pl.dir*pl.st;AP.Lp=pl.L;}}}
+          return {thr:car.vf<-0.3?1:0,brk:car.vf>0.3?1:0,st:so(AP.mv>0?AP.sF:-AP.sF)};
+        }
+        AP.mvD+=sp*dt;
+        let t=0,b=0;
+        if(AP.Lp>0){   // planned leg: wait for the wheel to reach full lock, ~4.5 m/s so the turning circle matches the plan, ease off into the stop
+          const tg=Math.min(3.2,Math.sqrt(1.6*aStop*Math.max(AP.Lp-AP.mvD,0))+0.4);
+          if(sp<0.8&&Math.abs(car.steer-(AP.mv>0?AP.sF:-AP.sF))>0.1){t=0;b=0;}
+          else if(AP.mv>0){t=car.vf<tg?0.9:0;b=car.vf>tg+0.4?1:0;}
+          else{b=-car.vf<tg?1:0;t=-car.vf>tg+0.4?1:0;}
+        }else if(AP.mv>0){t=car.vf<7?0.9:0;}else{b=car.vf>-6.5?1:0;}
+        // forward leg already pointing roughly along the road: hand the steering to pure pursuit so it drives out smoothly instead of holding full lock
+        if(AP.mv>0&&Math.abs(al)<0.5&&gF>3)return {thr:t,brk:b,st:so(clamp(AP.st,-1,1))};
+        return {thr:t,brk:b,st:so(AP.mv>0?AP.sF:-AP.sF)};
+      }
     }
     if(car.vf<-0.4){return {thr:1,brk:0,st:0};}                         // still rolling backwards: brake to a stop
     AP.hold=Math.max(0,(AP.hold||0)-dt);
+    // v7.4.1: pointing against the road (or away from the lane) = turn around NOW: brake to a stop, then the planner takes over.
+    // (before, it only reacted once something blocked it, so off the road it just drove on, facing the wrong way)
+    const wrongWay=Math.abs(alRoad())>1.9||Math.abs(wrapPi(Math.atan2(T.x-car.x,T.z-car.z)-car.h))>2.0;
+    if(wrongWay&&!AP.hold&&v>=0.8){thr=0;brk=1;AP.thr=0;AP.dec=Math.max(AP.dec,aBrkMax*0.8);}
     if(clr<stopD&&v>0.5&&!(clr>stopD*0.9&&brk>0.9)){const k=clamp((stopD-clr)/Math.max(stopD*0.6,1),0.35,1);
       thr=0;brk=Math.max(brk,k);AP.thr=0;AP.dec=Math.max(AP.dec,aBrkMax*k*0.6);}
-    const blocked=(clr<2.2)||(Math.abs(xte)>6.5&&v<1);
+    if(railOn(gg.i&~1)){
+      if(rvo>0.3&&rgap/rvo<0.9&&rgap<3){thr=0;brk=1;AP.thr=0;AP.dec=Math.max(AP.dec,aBrkMax*0.8);}
+      railBlk=rgap<0.45&&v<2.5;
+    }
+    const blocked=(clr<2.2)||railBlk||(Math.abs(xte)>6.5&&v<1);
     AP.stuck=(v<2.5&&blocked&&!AP.hold)?(AP.stuck||0)+dt:0;
-    if(AP.stuck>0.12||(v<0.8&&!AP.hold&&Math.abs(wrapPi(Math.atan2(T.x-car.x,T.z-car.z)-car.h))>2.0)){AP.rev=2.8;AP.revD=0;AP.stuck=0;AP.dec=0;AP.thr=0;}
+    // watchdog: if it should be moving but has gone nowhere for 1.5 s, run the turn manoeuvre whatever the reason
+    AP.wd=(v<0.6&&cap>3&&!AP.hold)?(AP.wd||0)+dt:0;if(AP.wd>1.5){AP.stuck=1;AP.wd=0;}
+    if(AP.stuck>0.12||(v<0.8&&!AP.hold&&wrongWay)){
+      const al0=wrapPi(Math.atan2(T.x-car.x,T.z-car.z)-car.h);
+      AP.sF=Math.abs(al0)>0.15?-Math.sign(al0):(bias?Math.sign(bias):-Math.sign(gg.d||1));
+      AP.mv=-1;
+      // v7.2: plenty of room ahead: drive out forwards (across to the other lane if that is where the room is) instead of reversing first
+      const aR0=alRoad();
+      if(Math.abs(aR0)>0.15)AP.sF=-Math.sign(aR0);
+      if(Math.abs(aR0)<1.7&&clr>7&&edgeGap(4)>1.5&&edgeGap(8)>0.6&&!railBlk){AP.mv=1;AP.sF=-Math.sign(aR0||-AP.sF);}
+      // v7.4: universal strategy: plan the fewest-move turn-around over the whole free space (overrides the heuristic first leg above when a plan exists)
+      AP.Lp=0;{const pl=apPlan(0);if(pl){AP.mv=pl.dir;AP.sF=pl.dir*pl.st;AP.Lp=pl.L;}}
+      AP.mst=AP.st;AP.legT=0;AP.mvD=0;AP.mvN=0;AP.zero=0;AP.mvStop=false;AP.stuck=0;AP.dec=0;AP.thr=0;}
   }
   return {thr:thr,brk:brk,st:clamp(AP.st+(AP.bias||0),-1,1)};
 }
@@ -2552,7 +2710,7 @@ function updateCar(dt){
   car.gripMul=Math.max(0.45,1-0.25*wetK);              // wet asphalt: less lateral grip
   const brakeMul=(tune.brake/100)*(1-0.3*wetK);          // ...and longer braking distances
   const kUp=keys.w,kDn=keys.s,kL=keys.a,kR=keys.d,hb=!!keys.space;
-  if((kL||kR)&&auto)setAuto(false);
+  if((kL||kR||kUp||kDn)&&auto)setAuto(false);   // v7.3: gas / brake / steering hands control back
   let thr=kUp?1:0,brk=kDn?1:0,st=(kR?1:0)-(kL?1:0);
   if(auto){const a=autopilot(dt);thr=a.thr;brk=a.brk;st=a.st;}
   else if(cruiseOn){
@@ -3369,6 +3527,8 @@ fitTesla();
 (function(){
   let fxOn=true;
   try{if(/[?&]fx=(0|off)/.test(location.search))fxOn=false;}catch(e){}
+  const QL={low:{fx:false,refl:false,ms:0,pr:0.75},medium:{fx:true,refl:false,ms:0,pr:1},high:{fx:true,refl:true,ms:4,pr:1.5},ultra:{fx:true,refl:true,ms:4,pr:2}};
+  let Q=QL.ultra,qName='ultra',fxForcedOff=!fxOn;
   const gl=renderer.getContext();
   const isGL2=!!renderer.capabilities.isWebGL2;
   const hdr=isGL2&&renderer.extensions.has('EXT_color_buffer_float');
@@ -3409,7 +3569,7 @@ fitTesla();
     if(sceneRT)sceneRT.dispose();if(reflRT)reflRT.dispose();mips.forEach(m=>m.dispose());mips=[];
     const o={depthBuffer:true,stencilBuffer:false,type:TYPE,format:THREE.RGBAFormat,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter};
     sceneRT=isGL2&&THREE.WebGLMultisampleRenderTarget?new THREE.WebGLMultisampleRenderTarget(w,h,o):new THREE.WebGLRenderTarget(w,h,o);
-    if(sceneRT.samples!==undefined)sceneRT.samples=4;
+    if(sceneRT.samples!==undefined)sceneRT.samples=Q.ms;
     reflRT=mk(Math.max(2,w>>1),Math.max(2,h>>1),{depthBuffer:true,generateMipmaps:true,minFilter:THREE.LinearMipmapLinearFilter});
     GFX.uRefl.value=reflRT.texture;
     let mw=w,mh=h;for(let i=0;i<5;i++){mw=Math.max(2,mw>>1);mh=Math.max(2,mh>>1);mips.push(mk(mw,mh));}
@@ -3474,7 +3634,7 @@ fitTesla();
       const w=Math.max(2,size.x|0),h=Math.max(2,size.y|0);
       if(w!==W||h!==H)build(w,h);
       updateEnvMap(!envRT);
-      reflPass();
+      if(Q.refl)reflPass();else GFX.uReflOn.value=0;
       renderer.setRenderTarget(sceneRT);renderer.render(scene,camera);
       // bloom: threshold + downsample chain, then additive tent upsample back to the top mip
       matDown0.uniforms.tex.value=sceneRT.texture;matDown0.uniforms.texel.value.set(1/W,1/H);matDown0.uniforms.thr.value=GFX.thr;
@@ -3492,8 +3652,19 @@ fitTesla();
       renderer.render(scene,camera);
     }
   }
+  function setQuality(n){
+    if(!QL[n])return;qName=n;Q=QL[n];
+    try{localStorage.setItem('slowroads.gfx',n);}catch(e){}
+    fxOn=Q.fx&&!fxForcedOff;failed=0;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,Q.pr));renderer.setSize(innerWidth,innerHeight);
+    W=0;H=0;   // rebuild render targets at the new size / sample count
+    document.querySelectorAll('#gfxPanel button[data-q]').forEach(b=>b.classList.toggle('on',b.dataset.q===n));
+  }
+  GFX.setQuality=setQuality;
+  document.querySelectorAll('#gfxPanel button[data-q]').forEach(b=>b.addEventListener('click',()=>{setQuality(b.dataset.q);if(typeof toast==='function')toast('Graphics: '+b.textContent);}));
+  try{const sv=localStorage.getItem('slowroads.gfx');setQuality(QL[sv]?sv:'ultra');}catch(e){setQuality('ultra');}
   GFX.render=render;
-  GFX.toggle=function(){fxOn=!fxOn;if(typeof toast==='function')toast(fxOn?'Graphics effects on':'Graphics effects off');};
+  GFX.toggle=function(){fxOn=!fxOn;fxForcedOff=!fxOn;if(typeof toast==='function')toast(fxOn?'Graphics effects on':'Graphics effects off');};
   window.addEventListener('keydown',e=>{if(e.key==='F8'){e.preventDefault();GFX.toggle();}});
 })();
 
@@ -3512,9 +3683,11 @@ fitTesla();
   setTimeout(()=>{const l=$('loading');l.style.opacity=0;setTimeout(()=>l.remove(),700);},200);
 })();
 
-let last=performance.now();
+let last=performance.now(),fpsN=0,fpsT=0;const fpsEl=document.getElementById('fpsVal');
 function frame(now){
   requestAnimationFrame(frame);
+  fpsN++;fpsT+=now-(frame.p||now);frame.p=now;
+  if(fpsT>=500){fpsEl.textContent=Math.round(fpsN*1000/fpsT);const gf=document.getElementById('gfxFps');if(gf)gf.textContent=fpsEl.textContent+' FPS';fpsN=0;fpsT=0;}
   const dt=Math.min((now-last)/1000,0.05);last=now;
   if(dt<=0)return;
   time+=dt;
