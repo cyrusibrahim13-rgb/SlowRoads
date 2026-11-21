@@ -32,5 +32,6 @@
     ],
     "category": "Game",
     "shortDescription": "Slow Roads desktop app"
+    "createUpdaterArtifacts": true
   }
 }
