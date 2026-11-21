@@ -3866,26 +3866,3 @@ requestAnimationFrame(frame);
 </script>
 </body>
 </html>
-
-  <!-- Your existing game code -->
-
-  <script type="module">
-    import { check } from "@tauri-apps/plugin-updater";
-    import { relaunch } from "@tauri-apps/plugin-process";
-
-    async function checkForUpdates() {
-      try {
-        const update = await check();
-
-        if (update) {
-          await update.downloadAndInstall();
-          await relaunch();
-        }
-      } catch (error) {
-        console.error("Update check failed:", error);
-      }
-    }
-
-    checkForUpdates();
-  </script>
-</body>
