@@ -31,7 +31,7 @@
          "icons/icon.icns"
     ],
     "category": "Game",
-    "shortDescription": "Slow Roads desktop app"
+    "shortDescription": "Slow Roads desktop app",
     "createUpdaterArtifacts": true
   }
 }
