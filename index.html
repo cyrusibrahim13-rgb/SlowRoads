@@ -4,7 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SlowRoads: Endless Driving</title>
-<!-- v7.6: new CHILL gear (proximity sensors fully on, top view, 20 mph cap, no FSD); P/R/N/D can be shifted by hand (menu option, key G for CHILL); handbrake drifting with tyre screech, skid marks and tyre smoke.
+<!-- v7.9: park screen (top 3-D view) shows just the car on a simple flat ground pad with its shadow - road, terrain, underglow, beams and sensors are hidden.
+     v7.8 (bug fixes + park view): the park screen now shows only the car, a flat ground pad and its shadow (no road, sensors or beams); the top-screen car in P now sits level and still on its shadow (no slope tilt, suspension bob or stale steering lock), headlight beams follow the body again; P is a true parking brake (locks the car dead still, also on steep slopes, shrugs off nudges); handbrake drift blends in smoothly (grip, yaw and drag ramp with the drift amount instead of dropping at once); manual gear changes never cause a surge (pedal-release latch + soft throttle ramp after every shift, P/N/R/D no longer carry over stale drift or pedal demand).
+     v7.7: headlight glow on the top-screen 3D car; real storage space inside the car's trunk (walls, lining, spare wheel, luggage); manual gears reworked (R: forward pedal reverses, back pedal brakes; D/N/R brake lights on whenever the brake is held; park view only in P; gears can be changed while moving, only P needs a full stop).
+     v7.6: new CHILL gear (proximity sensors fully on, top view, 20 mph cap, no FSD); P/R/N/D can be shifted by hand (menu option, key G for CHILL); handbrake drifting with tyre screech, skid marks and tyre smoke.
      v7.5: road surface reworked (less perfect, balanced with the terrain, moire removed by fading each noise octave out before it can alias); FSD holds the user's set speed (hard cap 100 mph); FSD lane lines no longer flicker; heavier fog in rain / storms; slightly slicker wet road; gas engine now sits inside a real engine bay under the bonnet.
      v7.4: FSD turn-around now plans the fewest-move manoeuvre (apPlan): full lock, every leg uses all the free space, direction + lock searched per leg.
      v7.1 (update): landing/downforce physics, flush obstacle collisions, louder FSD chime, FSD (renamed from autopilot) with reverse + emergency braking, 1 s proximity top-view delay, gas engine under the frunk.
@@ -173,11 +176,11 @@ kbd{border-color:rgba(95,242,255,.4);color:#e6fdff;box-shadow:0 0 6px rgba(95,24
 #tsScreen,#tsScreen2{position:relative;width:460px;height:400px;border-radius:14px;overflow:hidden;background:var(--sbg);color:var(--tx);pointer-events:auto;transition:background .6s}
 /* ---- backgrounds ---- */
 #tsBgPark{position:absolute;left:0;top:0;width:460px;height:400px;transition:opacity .6s;
-  background:radial-gradient(ellipse 70% 12% at 50% 50%,rgba(0,0,0,.09),transparent 72%),linear-gradient(180deg,#fdfdfe 0%,#f7f7f9 52%,#dcdde1 100%)}
-#tesla.dark #tsBgPark{background:radial-gradient(ellipse 70% 12% at 50% 50%,rgba(255,255,255,.07),transparent 72%),linear-gradient(180deg,#1e1f23 0%,#17181b 52%,#0c0c0e 100%)}
+  background:linear-gradient(180deg,#fdfdfe 0%,#f7f7f9 52%,#dcdde1 100%)}
+#tesla.dark #tsBgPark{background:linear-gradient(180deg,#1e1f23 0%,#17181b 52%,#0c0c0e 100%)}
 #tsBgDrive{position:absolute;left:0;top:0;width:460px;height:400px;background:var(--vbg);opacity:0;transition:opacity .6s}
 #tesla.drive #tsBgPark{opacity:0}#tesla.drive #tsBgDrive{opacity:1}
-#vizCv{position:absolute;left:0;top:0;width:460px;height:400px;pointer-events:auto;touch-action:none;cursor:grab}
+#vizCv{position:absolute;left:0;top:0;width:460px;height:400px;pointer-events:auto;touch-action:none;cursor:grab;-webkit-mask-image:linear-gradient(to bottom,transparent 52px,rgba(0,0,0,.55) 110px,#000 175px);mask-image:linear-gradient(to bottom,transparent 52px,rgba(0,0,0,.55) 110px,#000 175px)}
 #vizCv.dragging,#mapCv.dragging{cursor:grabbing}
 /* ---- mode visibility ---- */
 .pk,.dr{transition:opacity .5s,left .55s cubic-bezier(.4,0,.2,1),top .55s cubic-bezier(.4,0,.2,1),transform .55s cubic-bezier(.4,0,.2,1)}
@@ -1688,7 +1691,7 @@ function mpipe(parent,r,len,mat,x,y,z,rx){
 function buildCarModel(){
   const M=newModel([1,1]),g=M.group;
   // v7.5: the body is no longer one solid block - the front section is an open engine / frunk bay (floor, two fenders, firewall, nose panel)
-  mboxR(g,1.8,0.5,2.8,SH.body,0,0.62,-0.65,0.17);                      // cabin + rear body, up to the firewall at z = 0.75
+  mboxR(g,1.8,0.5,1.9,SH.body,0,0.62,-0.2,0.17);mboxR(g,0.2,0.5,0.9,SH.body,-0.8,0.62,-1.6,0.12);mboxR(g,0.2,0.5,0.9,SH.body,0.8,0.62,-1.6,0.12);mboxR(g,1.8,0.5,0.12,SH.body,0,0.62,-1.99,0.1);                      // cabin + rear body, up to the firewall at z = 0.75
   mboxR(g,0.2,0.5,1.3,SH.body,-0.8,0.62,1.4,0.12);mboxR(g,0.2,0.5,1.3,SH.body,0.8,0.62,1.4,0.12);   // front fenders (bay walls)
   mboxR(g,1.8,0.5,0.12,SH.body,0,0.62,1.99,0.1);                       // nose panel
   mbox(g,1.4,0.1,1.2,SH.dark,0,0.42,1.4);                              // bay floor (top at y = 0.47)
@@ -1698,7 +1701,7 @@ function buildCarModel(){
   g.add(M.cabin);
   mboxR(g,1.84,0.2,0.3,SH.dark,0,0.52,2.0,0.08);mboxR(g,1.84,0.2,0.3,SH.dark,0,0.52,-2.0,0.08);
   // frunk (bonnet) + trunk lid, each with a dark cavity underneath that shows when it is open
-  mbox(g,1.5,0.012,0.7,SH.cav,0,0.873,-1.6);
+  mbox(g,1.4,0.02,0.75,IN.lining,0,0.51,-1.6);mbox(g,1.4,0.3,0.03,IN.lining,0,0.66,-1.12);mpipe(g,0.3,0.12,SH.dark,0.3,0.58,-1.6);mpipe(g,0.17,0.13,SH.chrome,0.3,0.585,-1.6);mbox(g,0.5,0.24,0.38,SH.roof,-0.38,0.64,-1.55);mbox(g,0.5,0.03,0.04,SH.chrome,-0.38,0.77,-1.55);
   mboxR(mhinge(M,'frunk',g,0,0.87,0.75,-1.0),1.8,0.05,1.3,SH.body,0,0.025,0.65,0.17);
   mboxR(mhinge(M,'trunk',g,0,0.87,-1.15,1.0),1.8,0.05,0.9,SH.body,0,0.025,-0.45,0.17);
   [[-0.95,1.3,true],[0.95,1.3,true],[-0.95,-1.3,false],[0.95,-1.3,false]].forEach(w=>mwheel(M,g,w[0],w[1],0.36,0.28,w[2]));
@@ -1858,6 +1861,11 @@ try{const pmv=new THREE.PMREMGenerator(rd),es=new THREE.Scene();
     sx.fillStyle=sg;sx.fillRect(0,0,128,128);
     const shadow=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(shc),transparent:true,depthWrite:false}));
     shadow.rotation.x=-Math.PI/2;shadow.position.y=0.04;shadow.renderOrder=5;sc.add(shadow);
+    // v7.9: park view = the car on a simple flat ground pad with its shadow (nothing else)
+    const gdc=document.createElement('canvas');gdc.width=gdc.height=128;
+    {const gx=gdc.getContext('2d'),gg=gx.createRadialGradient(64,64,0,64,64,64);gg.addColorStop(0,'rgba(255,255,255,1)');gg.addColorStop(.62,'rgba(255,255,255,.9)');gg.addColorStop(1,'rgba(255,255,255,0)');gx.fillStyle=gg;gx.fillRect(0,0,128,128);}
+    const groundPad=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(gdc),transparent:true,depthWrite:false,opacity:0}));
+    groundPad.rotation.x=-Math.PI/2;groundPad.position.y=0.02;groundPad.renderOrder=0;groundPad.visible=false;sc.add(groundPad);
     const glow=new THREE.Mesh(car.glow.geometry,car.glow.material);glow.rotation.x=-Math.PI/2;glow.position.y=0.07;glow.renderOrder=6;glow.visible=false;sc.add(glow);
 
     const _v=new THREE.Vector3();
@@ -1873,6 +1881,24 @@ try{const pmv=new THREE.PMREMGenerator(rd),es=new THREE.Scene();
       PXV.push({g:grp,arcs:arcs,gl:gl});
     }
     const pxCol=new THREE.Color();
+    const hgG=new THREE.Group();sc.add(hgG);   // v7.7: beams ride the car's pitch / roll / bump height
+    const hgTex=(()=>{const c=document.createElement('canvas');c.width=128;c.height=256;const x=c.getContext('2d');
+      // cone: narrow at the lamp (top), widening and fading with distance (bottom)
+      const g=x.createLinearGradient(0,0,0,256);g.addColorStop(0,'rgba(255,255,255,0.95)');g.addColorStop(0.5,'rgba(255,255,255,0.45)');g.addColorStop(1,'rgba(255,255,255,0)');
+      x.filter='blur(5px)';x.fillStyle=g;x.beginPath();x.moveTo(60,6);x.lineTo(68,6);x.lineTo(120,250);x.lineTo(8,250);x.closePath();x.fill();
+      const t=new THREE.CanvasTexture(c);return t;})();
+    const hgMat=new THREE.MeshBasicMaterial({map:hgTex,color:0xffffff,transparent:true,depthWrite:false,opacity:0}),hgL=new THREE.Mesh(new THREE.PlaneGeometry(1,1),hgMat),hgR=new THREE.Mesh(new THREE.PlaneGeometry(1,1),hgMat);
+    [hgL,hgR].forEach(m=>{m.rotation.x=-Math.PI/2;m.renderOrder=7;m.visible=false;hgG.add(m);});
+    let hgDark=null;
+    function updateHeadGlow(){
+      if(hgDark!==VZ.dark){hgDark=VZ.dark;hgMat.blending=VZ.dark?THREE.AdditiveBlending:THREE.NormalBlending;hgMat.color.setHex(VZ.dark?0xffffff:0xfffbea);hgMat.needsUpdate=true;}
+      const tgt=lightsEff?(VZ.dark?0.8:0.6):0;hgMat.opacity+=(tgt-hgMat.opacity)*0.2;
+      const vis=hgMat.opacity>0.01,moto=shownVeh==='moto',len=highBeam?12:7.5,w=moto?2.0:(highBeam?4.2:3.4),x=moto?0:VC.hw*0.72,z=VC.cl+0.05+len/2;
+      const pkOff=VZ.pk<0.5;   // v7.8: no beams on the park screen
+      hgL.visible=vis&&pkOff;hgR.visible=vis&&!moto&&pkOff;
+      hgL.position.set(moto?0:x,0.12,z);hgR.position.set(-x,0.12,z);
+      hgL.scale.set(w,len,1);hgR.scale.set(w,len,1);
+    }
     function pxColor(d){return d>1.8?(VZ.dark?0xe6e6ee:0x80828e):d>1.1?0xffd84a:d>0.65?0xff9a1c:d>0.4?0xff5a14:0xff2020;}
     const stopEl=document.getElementById('stopTxt');
     function updateProxViz(){
@@ -1897,8 +1923,8 @@ try{const pmv=new THREE.PMREMGenerator(rd),es=new THREE.Scene();
     /* ---- road ribbons ---- */
     const NB=30,NF=50,NS=NB+NF,PD=5.2,PATH_LEN=85,PATH_BACK=115;
     const mk=(o)=>new THREE.MeshBasicMaterial(Object.assign({side:THREE.DoubleSide,transparent:true,depthWrite:false},o));
-    const M_ROAD=mk({}),M_LINE=mk({polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),
-          M_RAIL=mk({}),M_PATH=mk({vertexColors:true,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4});
+    const M_ROAD=mk({transparent:false,depthWrite:true,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1}),M_LINE=mk({polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),
+          M_RAIL=mk({transparent:false,depthWrite:true}),M_PATH=mk({vertexColors:true,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4});
     const ribbons=[];
     function ribbon(mat,order){
       const g=new THREE.BufferGeometry(),pos=new Float32Array(NS*18);
@@ -1915,11 +1941,40 @@ try{const pmv=new THREE.PMREMGenerator(rd),es=new THREE.Scene();
       p[o+9]=a[0];p[o+10]=y0;p[o+11]=a[1];p[o+12]=c[0];p[o+13]=y1;p[o+14]=c[1];p[o+15]=d[0];p[o+16]=y1;p[o+17]=d[1];
     }
     const NIL=(R,i)=>R.pos.fill(0,i*18,i*18+18);
+    const HEX=1.6,LY=new Float32Array(NS+2);   // v7.7: road elevation relative to the car (x1.6 so gentle hills read at this scale)
     const LX=new Float32Array(NS+2),LZ=new Float32Array(NS+2),NX=new Float32Array(NS+2),NZ=new Float32Array(NS+2);
+    /* v7.7: real ground beside the road - a terrain skirt (curb drop + shoulder + verge out to the fog) that follows the road's hills and the real terrain height,
+       so the road edge no longer hangs in mid-air and the trees / rocks stand on something */
+    const GD=[3.6,3.7,4.4,8,14,22,32,45,60,80,110],GR=GD.length,GN=NS+1,GCACHE=new Map();
+    const M_GRD=new THREE.MeshLambertMaterial({color:0xe2e3e8,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:3,polygonOffsetUnits:3});   // lit, so hills read as hills
+    const gPos=new Float32Array(2*GR*GN*3),gIdx=[];
+    for(let sd=0;sd<2;sd++)for(let j=0;j<GN-1;j++)for(let k=0;k<GR-1;k++){
+      const a=(sd*GN+j)*GR+k,b=a+1,c=(sd*GN+j+1)*GR+k+1,d=c-1;gIdx.push(a,b,c,a,c,d);}
+    const gGeo=new THREE.BufferGeometry();gGeo.setAttribute('position',new THREE.BufferAttribute(gPos,3));gGeo.setIndex(gIdx);
+    const gMesh=new THREE.Mesh(gGeo,M_GRD);gMesh.frustumCulled=false;gMesh.renderOrder=0;sc.add(gMesh);
+    function updateGround(i0){
+      if(GCACHE.size>400){for(const kk of GCACHE.keys()){if(kk<i0-5)GCACHE.delete(kk);}}
+      for(let j=0;j<GN;j++){
+        const gi=Math.min(i0+j,pts.length-1),p=pts[gi],cx=Math.cos(p.h),sn=Math.sin(p.h);
+        let H=GCACHE.get(gi);
+        if(!H){H=new Float32Array(2*GR);   // terrain height beside the road relative to the road centre (world-fixed, so computed once per point)
+          for(let sd=0;sd<2;sd++){const sg=sd?1:-1;
+            for(let k=0;k<GR;k++){const dd=GD[k],dv=sg*dd;
+              H[sd*GR+k]=k===0?0:k===1?-0.3:terrY(dd,p.y,p.x-cx*dv,p.z+sn*dv)-p.y;}}
+          GCACHE.set(gi,H);}
+        for(let sd=0;sd<2;sd++){const sg=sd?1:-1;
+          for(let k=0;k<GR;k++){
+            const dv=sg*GD[k],o=((sd*GN+j)*GR+k)*3;
+            gPos[o]=LX[j]+NX[j]*dv;gPos[o+1]=LY[j]+H[sd*GR+k]*HEX;gPos[o+2]=LZ[j]+NZ[j]*dv;
+          }
+        }
+      }
+      gGeo.attributes.position.needsUpdate=true;gGeo.computeVertexNormals();
+    }
     const A=[0,0],B=[0,0],C=[0,0],D=[0,0];
     function at(out,j,d){out[0]=LX[j]+NX[j]*d;out[1]=LZ[j]+NZ[j]*d;return out;}
     function band(R,i,j,d1,d2,y){ // flat strip between lateral offsets d1..d2 over segment j..j+1
-      at(A,j,d1);at(B,j,d2);at(C,j+1,d2);at(D,j+1,d1);quadAt(R,i,A,B,C,D,y,y);
+      at(A,j,d1);at(B,j,d2);at(C,j+1,d2);at(D,j+1,d1);quadAt(R,i,A,B,C,D,y+LY[j],y+LY[j+1]);
     }
     // v7.5: clipped strip - a band between two fixed distances ahead of the car (clip interpolated inside the segment), so the FSD lines have a steady start and end and never pop segment by segment
     function bandClip(R,i,j,d1,d2,y,zs,ze){
@@ -1928,11 +1983,13 @@ try{const pmv=new THREE.PMREMGenerator(rd),es=new THREE.Scene();
       const ax=LX[j]+NX[j]*d1,az=LZ[j]+NZ[j]*d1,bx=LX[j]+NX[j]*d2,bz=LZ[j]+NZ[j]*d2,cx=LX[j+1]+NX[j+1]*d2,cz=LZ[j+1]+NZ[j+1]*d2,dx=LX[j+1]+NX[j+1]*d1,dz=LZ[j+1]+NZ[j+1]*d1;
       A[0]=ax+(dx-ax)*t0;A[1]=az+(dz-az)*t0;B[0]=bx+(cx-bx)*t0;B[1]=bz+(cz-bz)*t0;
       C[0]=bx+(cx-bx)*t1;C[1]=bz+(cz-bz)*t1;D[0]=ax+(dx-ax)*t1;D[1]=az+(dz-az)*t1;
-      quadAt(R,i,A,B,C,D,y,y);
+      quadAt(R,i,A,B,C,D,y+LY[j]+(LY[j+1]-LY[j])*t0,y+LY[j]+(LY[j+1]-LY[j])*t1);
       const al=z=>z<0?Math.pow(clamp(1+z/PATH_BACK,0,1),1.3):clamp((PATH_LEN-z)/25,0,1),q=R.col,o=i*24,zz=[A[1],B[1],C[1],A[1],C[1],D[1]];
       for(let k=0;k<6;k++)q[o+k*4+3]=al(zz[k]);
     }
-    function wall(R,i,j,d,h){at(A,j,d);at(B,j+1,d);C[0]=B[0];C[1]=B[1];D[0]=A[0];D[1]=A[1];quadAt(R,i,A,B,C,D,0,h);}
+    function wall(R,i,j,d,h){at(A,j,d);at(B,j+1,d);const p=R.pos,o=i*18,y0=LY[j],y1=LY[j+1];
+      p[o]=A[0];p[o+1]=y0;p[o+2]=A[1];p[o+3]=B[0];p[o+4]=y1;p[o+5]=B[1];p[o+6]=B[0];p[o+7]=y1+h;p[o+8]=B[1];
+      p[o+9]=A[0];p[o+10]=y0;p[o+11]=A[1];p[o+12]=B[0];p[o+13]=y1+h;p[o+14]=B[1];p[o+15]=A[0];p[o+16]=y0+h;p[o+17]=A[1];}
 
     /* ---- obstacles: trees, pines, rocks and cacti are rebuilt with the same shapes, proportions and rotation as in the game world ---- */
     const OBS=150,M_OBS=new THREE.MeshLambertMaterial({color:0xc4c5cc,vertexColors:true}),M_OBS2=new THREE.MeshLambertMaterial({color:0xa9aab3,vertexColors:true}),M_OBS3=new THREE.MeshLambertMaterial({color:0xf4f4f7});
@@ -1960,8 +2017,10 @@ try{const pmv=new THREE.PMREMGenerator(rd),es=new THREE.Scene();
       for(let j=0;j<=NS;j++){
         const p=pts[Math.min(i0+j,pts.length-1)];
         const dx=p.x-car.x,dz=p.z-car.z,nx=-Math.cos(p.h),nz=Math.sin(p.h);
-        LX[j]=dx*c-dz*s;LZ[j]=dx*s+dz*c;NX[j]=nx*c-nz*s;NZ[j]=nx*s+nz*c;
+        LX[j]=dx*c-dz*s;LZ[j]=dx*s+dz*c;LY[j]=(p.y-car.y)*HEX;NX[j]=nx*c-nz*s;NZ[j]=nx*s+nz*c;
       }
+      {const yz=z=>{let j=0;while(j<NS-1&&LZ[j+1]<z)j++;const d=LZ[j+1]-LZ[j],t=d>1e-4?clamp((z-LZ[j])/d,0,1):0;return LY[j]+(LY[j+1]-LY[j])*t;};
+       const yA=yz(VC.hl),yB=yz(-VC.hl);VZ.slope=Math.atan2(yA-yB,2*VC.hl);VZ.baseY=yz(0);}   // v7.7: the drawn road's slope + height under the car, so the car sits on it
       const dcar=-(LX[cj]*NX[cj]+LZ[cj]*NZ[cj]);
       if(Math.abs(dcar)>0.35||!VZ.pSide)VZ.pSide=dcar>=0?1:-1;   // v7.3: hysteresis so the corridor never flips side near the centre line
       const side=VZ.pSide,lc=1.63*side;
@@ -1977,6 +2036,7 @@ try{const pmv=new THREE.PMREMGenerator(rd),es=new THREE.Scene();
         else{NIL(rPathL,j);NIL(rPathR,j);}
       }
       for(const R of ribbons){R.g.attributes.position.needsUpdate=true;if(R.col)R.g.attributes.color.needsUpdate=true;}
+      updateGround(i0);
       // obstacles: real shapes (trees, pines, rocks, cacti) at their true size and rotation
       let k=0;const cc=Math.floor(car.idx/N);
       for(let ci=cc-1;ci<=cc+4&&k<OBS;ci++){
@@ -1989,7 +2049,9 @@ try{const pmv=new THREE.PMREMGenerator(rd),es=new THREE.Scene();
             if(lz<-14||lz>85||Math.abs(lx)>38)continue;
             const v=Math.abs(Math.floor(o.x*0.37+o.z*0.61))%OBV[o.k];
             const g=takeObs(o.k,v);k++;
-            g.position.set(lx,0,lz);
+            if(o.gy===undefined){try{o.gy=groundAt(o.x,o.z,car.idx).y;}catch(e){o.gy=null;}}
+            let ly=o.gy!=null?(o.gy-car.y)*HEX:0;
+            g.position.set(lx,ly,lz);
             if(o.k==='rock')g.scale.set(o.b,o.h,o.b);else g.scale.setScalar(o.s);
             g.rotation.y=-o.yaw-car.h;   // same heading as in the world (cactus arms, rock clusters, tree lean)
             if(k>=OBS)break;
@@ -2003,9 +2065,9 @@ try{const pmv=new THREE.PMREMGenerator(rd),es=new THREE.Scene();
     /* ---- theme ---- */
     VZ.setTheme=function(dark){
       VZ.dark=dark;
-      const P=dark?{fog:0x1a1b1f,road:0x2c2d33,line:0x8a8c96,rail:0x474950,pg:0x666873,pb:0x4f7dff,obs:0x6a6d77,obs2:0x555862,obs3:0x6b6d77,sh:.45}
-                  :{fog:0xeeeef2,road:0xdadbe1,line:0xffffff,rail:0xbfc0c8,pg:0xb2b4bd,pb:0x3e6ae1,obs:0xc4c5cc,obs2:0xa9aab3,obs3:0xf4f4f7,sh:1};
-      fogC.set(P.fog);M_ROAD.color.set(P.road);M_LINE.color.set(P.line);M_RAIL.color.set(P.rail);M_OBS.color.set(P.obs);M_OBS2.color.set(P.obs2);M_OBS3.color.set(P.obs3);
+      const P=dark?{fog:0x1a1b1f,grd:0x222328,road:0x2c2d33,line:0x8a8c96,rail:0x474950,pg:0x666873,pb:0x4f7dff,obs:0x6a6d77,obs2:0x555862,obs3:0x6b6d77,sh:.45}
+                  :{fog:0xeeeef2,grd:0xe2e3e8,road:0xdadbe1,line:0xffffff,rail:0xbfc0c8,pg:0xb2b4bd,pb:0x3e6ae1,obs:0xc4c5cc,obs2:0xa9aab3,obs3:0xf4f4f7,sh:1};
+      fogC.set(P.fog);sc.fog.color.set(P.fog);M_GRD.color.set(P.grd);M_ROAD.color.set(P.road);M_LINE.color.set(P.line);M_RAIL.color.set(P.rail);M_OBS.color.set(P.obs);M_OBS2.color.set(P.obs2);M_OBS3.color.set(P.obs3);
       VZ.pathGrey=P.pg;VZ.pathBlue=P.pb;shadow.material.opacity=P.sh;
     };
     VZ.setTheme(false);
@@ -2045,11 +2107,15 @@ try{const pmv=new THREE.PMREMGenerator(rd),es=new THREE.Scene();
        for(const k in car.models){const m=car.models[k];if(m.frunk)m.frunk.g.rotation.x=m.frunk.ang*fe;if(m.trunk)m.trunk.g.rotation.x=m.trunk.ang*te;}}   // v6.4: the real car's frunk / trunk open too
       // wheels / steering / body attitude follow the game car
       const ws=car.wheelsSpin;for(let i=0;i<ws.length&&i<M.wheelsSpin.length;i++)M.wheelsSpin[i].rotation.x=ws[i].rotation.x;
-      const fp=car.frontPivots;for(let i=0;i<fp.length&&i<M.frontPivots.length;i++)M.frontPivots[i].rotation.y=fp[i].rotation.y;
+      const pkF=1-e;   // v7.8: 0 = fully parked view, 1 = driving view
+      const fp=car.frontPivots;for(let i=0;i<fp.length&&i<M.frontPivots.length;i++)M.frontPivots[i].rotation.y=fp[i].rotation.y*pkF;   // parked: wheels straight, no stale steering lock
       for(let i=0;i<M.sigL.length&&i<car.sigL.length;i++)M.sigL[i].material.color.copy(car.sigL[i].material.color);   // v6.9: turn signals / hazards on the top-screen car
       for(let i=0;i<M.sigR.length&&i<car.sigR.length;i++)M.sigR[i].material.color.copy(car.sigR[i].material.color);
-      carG.rotation.set(car.group.rotation.x*0.7,0,car.group.rotation.z);
-      carG.position.y=car.sp||0;
+      // v7.8: parked, the road is hidden and the car stands on its contact shadow, so it sits dead level and still
+      // (no road-slope tilt, no suspension bob or roll, no floating); the drive view keeps the full body motion
+      carG.rotation.set((car.air?car.group.rotation.x*0.7:-(VZ.slope||0)-(car.pa||0)*0.7)*pkF,0,car.group.rotation.z*pkF);
+      carG.position.y=(car.sp||0)*pkF;   // road heights are relative to the car, so a jump simply lets the road drop away
+      hgG.rotation.copy(carG.rotation);hgG.position.y=carG.position.y;   // (v7.8: this line had been swallowed by the comment above, so the beams never followed the body)
       // road
       const showRoad=pk<0.98;
       for(const R of ribbons)R.m.visible=showRoad;
@@ -2076,8 +2142,12 @@ try{const pmv=new THREE.PMREMGenerator(rd),es=new THREE.Scene();
       cam.fov=55+(28-55)*e+topE*8;
       const r=VZ.rect;r.x=RD.x+(RP.x-RD.x)*e;r.y=RD.y+(RP.y-RD.y)*e;r.w=RD.w+(RP.w-RD.w)*e;r.h=RD.h+(RP.h-RD.h)*e;
       cam.aspect=r.w/r.h;cam.zoom=zoomT;cam.updateProjectionMatrix();cam.updateMatrixWorld(true);
+      // v7.9: park = car + flat ground pad + shadow; road / terrain / underglow fade out
       shadow.visible=true;
-      updateProxViz();
+      {const gp=groundPad.material;gp.color.setHex(VZ.dark?0x30323a:0xd6d7dd);gp.opacity=e*0.95;groundPad.visible=e>0.01;groundPad.scale.setScalar(9.5*lenK);}
+      glow.visible=!!car.glow.visible&&e<0.5;
+      {const tr=pk>0.001;if(M_GRD.transparent!==tr){M_GRD.transparent=tr;M_GRD.needsUpdate=true;}M_GRD.opacity=1-e;gMesh.visible=pk<0.98;}
+      updateProxViz();updateHeadGlow();
       const k=VZ.k;
       rd.setViewport(Math.round(r.x*k),Math.round((VZ.CH-r.y-r.h)*k),Math.round(r.w*k),Math.round(r.h*k));
       rd.render(sc,cam);
@@ -2181,8 +2251,9 @@ function setGear(g){
   if(!manualGears){toast('Turn on Manual gears in the menu to shift P R N D (CHILL works in auto)');return;}
   const vf=car.vf;
   if(g==='P'&&Math.abs(vf)>1){toast('Stop the car before selecting P');return;}
-  if((g==='D'&&vf<-1.5)||(g==='R'&&vf>1.5)){toast('Stop the car before changing direction');return;}
+  
   if(chillOn)setChill(false,true);
+  if(g!==selGear){car.gearLatch=true;car.gearRamp=0;}   // v7.8: after a shift the pedals must be released, then drive demand fades in
   selGear=g;hudForce=true;toast('Gear '+g);
 }
 function updateViewVis(){
@@ -2458,7 +2529,7 @@ function updateProx(dt,g){
 function resetCar(){
   setRoadWarn(0);RW.offT=RW.wrongT=0;
   const i=nearestIdx(car.x,car.z,car.idx),p=pts[i],q=pts[i+1];
-  car.x=p.x;car.z=p.z;car.h=Math.atan2(q.x-p.x,q.z-p.z);car.vx=car.vz=0;car.vf=0;car.steer=0;car.yawRate=0;car.idx=i;
+  car.x=p.x;car.z=p.z;car.h=Math.atan2(q.x-p.x,q.z-p.z);car.vx=car.vz=0;car.vf=0;car.steer=0;car.yawRate=0;car.idx=i;car.pkX=undefined;car.gearLatch=false;car.gearRamp=1;
   car.gear=0;car.shiftT=0;car.lean=0;car.drift=car.skid=0;skLast[0]=skLast[1]=null;
   car.y=groundAt(car.x,car.z,car.idx).y;car.air=false;car.vy=0;car.pys=undefined;
 }
@@ -2850,18 +2921,34 @@ function updateCar(dt){
     if(kDn||hb)setCruise(false,'Cruise off (brake)');
     else if(!kUp){const c=cruiseCtl(Math.max(car.vf,0),cruiseSet/3.6,dt);thr=c.thr;brk=c.brk;}
   }
-  if(gearManual()){   // v7.6 manual P R N D
+  const manR=gearManual()&&selGear==='R';
+  if(gearManual()){   // v7.7 manual P R N D
     const g=selGear;
-    if(g==='R'){if(car.vf>-0.5&&thr>0){thr=0;hintGear('In R: select D to drive forward');}}
-    else{
-      if(brk>0&&car.vf<=0.8){brk=0;if(g==='D')hintGear('Select R to reverse');}
+    if(g==='R'){   // forward pedal drives backwards, back pedal brakes
+      const w=thr>0,s=brk>0;thr=0;brk=0;
+      if(w)brk=1;
+      else if(s){if(car.vf<-0.5)thr=1;else if(car.vf>0.8)brk=1;}
+    }else{
       if(g==='P'||g==='N'){if(thr>0)hintGear('In '+g+': select D to drive');thr=0;}
+      if(brk>0&&car.vf<=0.8){brk=0;if(car.vf<-0.5)thr=1;else if(g==='D')hintGear('Select R to reverse');}
     }
-    if(g==='P')brk=0;
-  }
+    if(g==='P'){thr=0;brk=0;}
+    // v7.8: no surprise acceleration after a shift. Real braking (pedal against the motion) always works;
+    // drive demand is held at zero until the pedals are released, then fades in over ~0.5 s.
+    if(car.gearLatch){
+      if(!kUp&&!kDn&&!hb)car.gearLatch=false;
+      else{if(car.vf>=-0.5)thr=0;if(car.vf<=0.8)brk=0;}
+    }
+    if(!car.gearLatch&&car.gearRamp<1){
+      car.gearRamp=Math.min(1,car.gearRamp+dt*2);
+      const k=car.gearRamp*car.gearRamp*(3-2*car.gearRamp);
+      if(car.vf>=-0.5)thr*=k;if(car.vf<=0.8)brk*=k;
+    }
+  }else{car.gearLatch=false;car.gearRamp=1;}
   car.thr=thr;
-  car.brakeOn=(brk>0&&car.vf>-0.3)||hb;
-  car.drift+=clamp(((hb&&Math.abs(car.vf)>6&&!car.air)?1:0)-car.drift,-dt*2.5,dt*4);   // v7.6: handbrake drift amount
+  car.brakeOn=!!kDn||hb||(!manR&&brk>0&&car.vf>-0.3);   // brake lights: whenever the back pedal is held, in any gear
+  car.drift+=clamp(((hb&&Math.abs(car.vf)>6&&!car.air)?1:0)-car.drift,-dt*1.8,dt*1.9);   // v7.8: slower, symmetric blend into / out of the drift
+  const dK=car.drift*car.drift*(3-2*car.drift);   // smoothstep so grip eases away instead of falling off a cliff   // v7.6: handbrake drift amount
 
   // steering
   const rate=(auto?10:(st!==0?5:7))*VC.steerRate;
@@ -2869,7 +2956,7 @@ function updateCar(dt){
   if(sig){const d=sig===1?-car.steer:car.steer;if(d>0.3)sigPeak=1;else if(sigPeak&&d<0.08&&time-sigT0>0.8)setSignal(0,true);}   // v6.9: indicator cancels once the turn is finished
   const ms=VC.steerMax*(tune.steer/100)/(1+car.vf*car.vf*VC.sd),steerAng=car.steer*ms;
   let yaw=-steerAng*car.vf/VC.wb;
-  if(hb&&Math.abs(car.vf)>6)yaw*=1.15+0.95*car.drift;
+  if(hb&&Math.abs(car.vf)>6)yaw*=1+1.05*dK;
   car.yawRate=lerp(car.yawRate,yaw,1-Math.exp(-dt*10));
   car.h+=car.yawRate*dt;
 
@@ -2906,11 +2993,11 @@ function updateCar(dt){
   if(brk>0){a-=vf>0.8?brk*VC.brake*brakeMul:brk*VC.rev*(PW.isEV?1.15:1)*clamp(1+vf/12,0,1);}
   const v0=vf;
   vf+=a*dt;
-  if(gearManual()&&selGear==='P')vf=Math.sign(vf)*Math.max(Math.abs(vf)-25*dt,0);
+  if(gearManual()&&selGear==='P')vf=Math.sign(vf)*Math.max(Math.abs(vf)-40*dt,0);
   if(chillOn&&Math.abs(vf)>CHILL_MAX)vf=Math.sign(vf)*Math.max(CHILL_MAX,Math.abs(vf)-35*dt);
   let drag=VC.roll+VC.dk*vf*vf;
   if(car.off)drag+=1.5+Math.abs(vf)*0.18;
-  if(hb)drag+=6*(1-0.6*car.drift)*(1-0.3*wetK);
+  if(hb)drag+=6*(1-0.6*dK)*(1-0.3*wetK);
   car.regen=false;
   if(thr===0&&brk===0&&vf>1){
     if(PW.isEV){drag+=PW.regen*clamp(vf/5,0,1);car.regen=true;}                 // regenerative lift-off braking
@@ -2924,16 +3011,25 @@ function updateCar(dt){
   const hydro=car.off?0:stormAmt*smooth(24,46,Math.abs(vf))*0.22;   // standing water in a storm: hydroplaning at speed
   const dfK=Math.min(Math.abs(vf)/45,1.6),dF=1+0.45*dfK*dfK;   // v7.1: aero downforce (~+45% grip at 57 m/s, more beyond) so the car feels planted
   car.landT=Math.max(0,(car.landT||0)-dt);
-  const grip=(hb?(1.4-1.1*car.drift):(car.off?3.5:6.5))*VC.grip*Math.max(0.35,car.gripMul-hydro)*(hb?1+0.15*(dF-1):dF)*(1+0.5*Math.min(car.landT,0.4));
+  const gN=(car.off?3.5:6.5),gD=0.55;   // v7.8: grip blends from normal to drift level with the drift amount (was an instant drop to 1.4 on pull)
+  const gBase=(hb&&car.drift<=0.001)?gN*0.8:lerp(gN,gD,dK);   // handbrake at low speed: mild grip loss only
+  const grip=gBase*VC.grip*Math.max(0.35,car.gripMul-hydro)*lerp(dF,1+0.15*(dF-1),dK)*(1+0.5*Math.min(car.landT,0.4));
   car.slip=Math.abs(vl);
   {const sk=(car.drift>0.25&&!car.air&&Math.abs(vf)>4.5)?clamp(car.drift*(0.4+0.6*clamp(car.slip/3,0,1)),0,1):0;car.skid+=(sk-car.skid)*Math.min(1,dt*10);}
   vl*=Math.exp(-(car.air?0.15:grip)*dt);
   car.vx=fx*vf+rx*vl;car.vz=fz*vf+rz*vl;car.vf=vf;
-  car.x+=car.vx*dt;car.z+=car.vz*dt;
+  // v7.8: P = parking brake. Hard lock: no velocity, no yaw, no drift, position pinned (holds on any slope)
+  car.parked=gearManual()&&selGear==='P'&&!car.air&&Math.abs(vf)<2.5;
+  if(car.parked){
+    if(car.pkX===undefined){car.pkX=car.x;car.pkZ=car.z;}
+    car.vx=car.vz=0;car.vf=0;vf=0;vl=0;car.yawRate=0;car.drift=0;car.skid=0;car.accel=0;
+    car.x=car.pkX;car.z=car.pkZ;
+  }else{car.pkX=undefined;car.x+=car.vx*dt;car.z+=car.vz*dt;}
 
   // ground following
   const g=groundAt(car.x,car.z,car.idx);car.idx=g.i;
   checkCollisions(g,dt);
+  if(car.parked){car.x=car.pkX;car.z=car.pkZ;car.vx=car.vz=0;car.vf=0;}   // v7.8: nothing can push a parked car
   if(Math.abs(g.d)>165){resetCar();toast('Back on the road');return;}
   updateProx(dt,g);
   if(updateRoadWarn(dt,g))return;
@@ -3594,7 +3690,8 @@ function updateHUD(dt){
   dReg+=(car.regenF-dReg)*Math.min(1,dt*8);dPw+=(car.pwrF-dPw)*Math.min(1,dt*8);
   const rev=car.vf<-0.5,stopped=kmh<1.5&&car.thr===0&&!rev;
   // park / drive screen
-  if(stopped&&!chillOn){parkT+=dt;if(parkT>1.0)setMode('park');}else{parkT=0;setMode('drive');}
+  const wantPark=gearManual()?(selGear==='P'&&kmh<1.5):(stopped&&!chillOn);
+  if(wantPark){parkT+=dt;if(parkT>1.0)setMode('park');}else{parkT=0;setMode('drive');}
   // energy (cosmetic)
   if(started){tripT+=dt;tripM+=v*dt;}
   energy=clamp(energy-dt*(v*0.00012+car.thr*0.002)+(PW.isEV?car.regenF*0.003*dt:0),5,100);
