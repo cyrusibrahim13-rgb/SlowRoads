@@ -13,6 +13,7 @@
     "build": "npm run prepare:index && tauri build",
     "dist": "npm run build",
     "dist:mac": "bash scripts/build-macos.sh",
+    "dist:ios": "npm run prepare:index && tauri ios build --no-sign",
     "dist:win": "npm run prepare:index && tauri build --bundles nsis"
   },
   "devDependencies": {

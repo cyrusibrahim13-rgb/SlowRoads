@@ -1,6 +1,12 @@
 # Releasing
 
-The release workflow runs on pushes to `main`, builds macOS and Windows installers, and updates the `v<version>` GitHub release. The app version comes from `package.json`.
+The release workflow runs on pushes to `main`, builds macOS, Windows, and unsigned iOS releases, and updates the `v<version>` GitHub release. The app version comes from `package.json`.
+
+## iOS unsigned IPA
+
+The iOS job runs on macOS, initializes the generated Tauri iOS project, disables code signing, and packages the resulting app as `Slow-Roads-iOS-unsigned.ipa`. The IPA is uploaded as a workflow artifact and attached to the GitHub release.
+
+The unsigned IPA is for sideloading and testing only. It cannot be installed through the App Store or distributed through TestFlight.
 
 ## macOS signing
 
