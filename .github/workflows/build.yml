@@ -149,6 +149,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Prepare web assets
+        run: npm run prepare:index
+
       - name: Initialize iOS project
         run: npm exec tauri -- ios init --ci
 
@@ -168,6 +171,8 @@ jobs:
           text = path.read_text()
           text = re.sub(r"CODE_SIGN_STYLE\s*=\s*[^;]+;", "CODE_SIGN_STYLE = Manual;", text)
           text = re.sub(r"CODE_SIGNING_ALLOWED\s*=\s*[^;]+;", "CODE_SIGNING_ALLOWED = NO;", text)
+          text = re.sub(r"CODE_SIGNING_REQUIRED\s*=\s*[^;]+;", "CODE_SIGNING_REQUIRED = NO;", text)
+          text = re.sub(r"PROVISIONING_PROFILE\s*=\s*[^;]*;", 'PROVISIONING_PROFILE = "";', text)
           text = re.sub(r"DEVELOPMENT_TEAM\s*=\s*[^;]*;", "DEVELOPMENT_TEAM = \"\";", text)
           text = re.sub(r"PROVISIONING_PROFILE_SPECIFIER\s*=\s*[^;]*;", 'PROVISIONING_PROFILE_SPECIFIER = "";', text)
           path.write_text(text)
