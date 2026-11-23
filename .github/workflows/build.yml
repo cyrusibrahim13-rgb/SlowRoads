@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-latest
+          - os: xcode-27
             name: macOS Universal
             files: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
           - os: windows-latest
@@ -130,7 +130,7 @@ jobs:
 
   build-ios:
     name: Build unsigned iOS IPA
-    runs-on: macos-latest
+    runs-on: xcode-27
     steps:
       - name: Check out release source
         uses: actions/checkout@v4
