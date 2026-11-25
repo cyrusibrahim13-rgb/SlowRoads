@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-latest
+          - os: xcode-27
             name: macOS Universal
             files: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
           - os: windows-latest
@@ -128,10 +128,84 @@ jobs:
           name: slow-roads-${{ matrix.name }}
           path: ${{ matrix.files }}
 
+  build-ios:
+    name: Build unsigned iOS IPA
+    runs-on: xcode-27
+    steps:
+      - name: Check out release source
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install iOS targets
+        run: rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Prepare web assets
+        run: npm run prepare:index
+
+      - name: Initialize iOS project
+        run: npm exec tauri -- ios init --ci
+
+      - name: Disable iOS code signing
+        shell: bash
+        run: |
+          set -euo pipefail
+          pbxproj="$(find src-tauri/gen/apple -name project.pbxproj -print -quit)"
+          test -n "$pbxproj"
+
+          python3 - "$pbxproj" <<'PY'
+          import re
+          import sys
+          from pathlib import Path
+
+          path = Path(sys.argv[1])
+          text = path.read_text()
+          text = re.sub(r"CODE_SIGN_STYLE\s*=\s*[^;]+;", "CODE_SIGN_STYLE = Manual;", text)
+          text = re.sub(r"CODE_SIGNING_ALLOWED\s*=\s*[^;]+;", "CODE_SIGNING_ALLOWED = NO;", text)
+          text = re.sub(r"CODE_SIGNING_REQUIRED\s*=\s*[^;]+;", "CODE_SIGNING_REQUIRED = NO;", text)
+          text = re.sub(r"PROVISIONING_PROFILE\s*=\s*[^;]*;", 'PROVISIONING_PROFILE = "";', text)
+          text = re.sub(r"DEVELOPMENT_TEAM\s*=\s*[^;]*;", "DEVELOPMENT_TEAM = \"\";", text)
+          text = re.sub(r"PROVISIONING_PROFILE_SPECIFIER\s*=\s*[^;]*;", 'PROVISIONING_PROFILE_SPECIFIER = "";', text)
+          path.write_text(text)
+          PY
+
+      - name: Build unsigned iOS app
+        run: npm exec tauri -- ios build --ci --no-sign
+
+      - name: Package unsigned IPA
+        shell: bash
+        run: |
+          set -euo pipefail
+          app="$(find src-tauri/gen/apple src-tauri/target -type d -name '*.app' -print -quit)"
+          test -n "$app"
+
+          rm -rf Payload
+          mkdir -p Payload ios-artifacts
+          cp -R "$app" Payload/
+          rm -f ios-artifacts/Slow-Roads-iOS-unsigned.ipa
+          zip -qry ios-artifacts/Slow-Roads-iOS-unsigned.ipa Payload
+          unzip -t ios-artifacts/Slow-Roads-iOS-unsigned.ipa >/dev/null
+
+      - name: Upload unsigned IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: slow-roads-iOS
+          path: ios-artifacts/Slow-Roads-iOS-unsigned.ipa
+          if-no-files-found: error
+
   release:
     name: Create or update versioned release
     if: github.event_name == 'push' || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
-    needs: build
+    needs: [build, build-ios]
     runs-on: ubuntu-latest
     steps:
       - name: Check out release source
@@ -174,4 +248,5 @@ jobs:
           files: |
             release-assets/**/*.dmg
             release-assets/**/*.exe
+            release-assets/**/*.ipa
             release-notes/v${{ steps.version.outputs.value }}.md
